@@ -14,6 +14,7 @@
 #include "midi_handler.h"
 #include "device.h"
 
+#include "handler.h"
 #include "samples/samples.h"
 #include "wav2mem.h"
 #include "bufferManager.h"
@@ -24,6 +25,8 @@
 #define EXTMEM_SIZE 4000000
 EXTMEM unsigned int samples_mem[EXTMEM_SIZE]; //4M Words
 bufferManager ramManager(samples_mem, EXTMEM_SIZE);
+patchHandler  configHandler;
+char str_to_char_p[100];
 
 
 //****************************************************************
@@ -122,12 +125,15 @@ void samplerInit(void)
     ramManager.allocate(10689);
   }
   
-
-  //Load File
-  File dataFile = SD.open("KICK16.WAV"); 
-  if(dataFile){
+  
+  String param;
+  if(configHandler.getParamValue( "sampler_1",  "file", param ))
+  {
+    param.toCharArray(str_to_char_p, param.length() + 1);
+    File dataFile = SD.open(str_to_char_p); 
     ramManager.allocate( wav2m(&dataFile, ramManager.getNextPointer() ));
   }
+
  
 #ifdef DEBUG_SAMPLER  
   Serial.print("Init Sampler\n");
