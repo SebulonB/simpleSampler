@@ -9,13 +9,16 @@
 class patchHandler {
 
   public:
-    patchHandler();
+    patchHandler(){};
     ~patchHandler(){};
-
+    
+    void init();
     bool getParamValue(const char *l_device, const char *l_param, float &val);
     bool getParamValue(const char *l_device, const char *l_param, String &val);
 
     bool saveParamValue(const char *l_device, const char *l_param, float val);
+    bool saveParamValue(const char *l_device, const char *l_param, String &val);
+
     void saveWriteHandler(void);
 
   private:

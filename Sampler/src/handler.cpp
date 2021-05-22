@@ -16,14 +16,9 @@
 //#define FILE_STR "SET1.TXT"
 #define FILE_STR "SET_2.TXT"
 
-patchHandler::patchHandler(){
 
-//   if (!SD.begin(BUILTIN_SDCARD)) {
-// #ifdef DEBUG_PATCH_HANDLER    
-//     Serial.println("SD Card. initialization failed!");
-// #endif
-//   }
-
+void patchHandler::init(void)
+{
 #ifdef DEBUG_PATCH_HANDLER
   Serial.print("patchHandler Init\n");
 #endif
@@ -89,9 +84,17 @@ bool patchHandler::getParamValue(const char *l_device, const char *l_param, Stri
 
   String v = m_doc_read[l_device][l_param];
   
+  if(    v.c_str() == NULL 
+      || v.c_str() == nullptr 
+      || (strcmp (v.c_str(), "null") == 0) )
+  
+  {
+    return false;
+  }
+
   val = v;
 #ifdef DEBUG_PATCH_HANDLER   
-  sprintf(str_, "ph: getValue (%s | %-8s): %s\n", l_device, l_param, val);   
+  sprintf(str_, "ph: getValue (%s | %-8s): %s\n", l_device, l_param, val.c_str());   
   Serial.print(str_);
 #endif
   return true;  
@@ -109,6 +112,21 @@ bool patchHandler::saveParamValue(const char *l_device, const char *l_param, flo
 #endif
 
   return true;
+}
+
+bool patchHandler::saveParamValue(const char *l_device, const char *l_param, String &val)
+{
+
+  if( (strcmp (l_device,error_str) == 0) || strcmp (l_param, error_str) == 0){return false;}
+
+  m_doc_write[l_device][l_param] = val;
+
+#ifdef DEBUG_PATCH_HANDLER   
+  sprintf(str_, "ph: savedParam (%s | %-8s): %sf\n", l_device, l_param, val.c_str());   
+  Serial.print(str_);
+#endif
+
+ return true;
 }
 
 

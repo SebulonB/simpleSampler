@@ -26,7 +26,6 @@
 EXTMEM unsigned int samples_mem[EXTMEM_SIZE]; //4M Words
 bufferManager ramManager(samples_mem, EXTMEM_SIZE);
 patchHandler  configHandler;
-char str_to_char_p[100];
 
 
 //****************************************************************
@@ -113,7 +112,10 @@ void samplerInit(void)
   delay_feedback.gain(0, 1.0);   //no feedback
   delay_feedback.gain(1, 0.0);
   delaySecDryWet.gain(0, 1.0);   //full dry
-  delaySecDryWet.gain(1, 0.0);       
+  delaySecDryWet.gain(1, 0.0);    
+
+  //Init handler
+  configHandler.init();   
 
   
   //Fill Buffer
@@ -127,10 +129,9 @@ void samplerInit(void)
   
   
   String param;
-  if(configHandler.getParamValue( "sampler_1",  "file", param ))
+  if(configHandler.getParamValue( "sampler_2",  "file1", param ))
   {
-    param.toCharArray(str_to_char_p, param.length() + 1);
-    File dataFile = SD.open(str_to_char_p); 
+    File dataFile = SD.open(param.c_str()); 
     ramManager.allocate( wav2m(&dataFile, ramManager.getNextPointer() ));
   }
 

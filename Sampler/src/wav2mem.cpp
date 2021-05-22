@@ -62,10 +62,6 @@ unsigned int total_length=0;
 int wav2m(File *in, unsigned int *out, int pcm_mode=1)
 {
 
-#ifdef DEBUG_WAV2MEM
-  Serial.print("Open wav2m\n");
-#endif
-
   if( out == NULL){return -1;}
 
   uint32_t header[4];
