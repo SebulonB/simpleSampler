@@ -1,0 +1,52 @@
+#ifndef LED_H_
+#define LED_H_
+#include "WProgram.h"
+
+#define LED_PIN 33
+
+enum LED_STATE
+{
+  LED_STATE_STARTUP= 0,
+  LED_STATE_CLOCK,
+
+  LED_STATE_CONFIRM_16, 
+  LED_STATE_CONFIRM_8,
+  LED_STATE_CONFIRM_4,
+  LED_STATE_CONFIRM_2,
+  LED_STATE_CONFIRM_1,
+
+  LED_STATE_NONE,
+  LED_STATE_NUM,
+};
+
+enum LED_USER
+{
+  LED_USER_MAIN = 0,
+  LED_USER_CLOCK,
+  LED_USER_NUM
+};
+
+enum LED_SIGNAL
+{
+  LED_SIGNAL_BANG = 0,
+  LED_SIGNAL_CLOCK_IN,
+  LED_SIGNAL_CLOCK_OUT,
+
+  LED_SIGNAL_SET_16,
+  LED_SIGNAL_SET_8,
+  LED_SIGNAL_SET_4,
+  LED_SIGNAL_SET_2,
+  LED_SIGNAL_SET_1,
+  LED_SIGNAL_SET_8T,
+  LED_SIGNAL_SET_TRIGGER_PRI,
+
+  LED_SIGNAL_NUM
+};
+
+
+void led_worker(enum LED_USER user, enum LED_SIGNAL signal);
+void led_init();
+void led_on(void);
+void led_off(void);
+
+#endif /*LED_H_*/
