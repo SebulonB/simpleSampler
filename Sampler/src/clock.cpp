@@ -8,7 +8,7 @@
 
 
 //#define DEBUG_CLOCK
-#define CLOCK_PRINT_BPM
+//#define CLOCK_PRINT_BPM
 
 enum CLOCK_STATE clock_state        = CLOCK_STATE_NONE;
 enum CLOCK_STATE clock_state_next   = CLOCK_STATE_NONE;

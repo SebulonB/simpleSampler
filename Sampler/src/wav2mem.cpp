@@ -66,6 +66,8 @@ int wav2m(File *in, unsigned int *out, int pcm_mode=1)
   Serial.print("Open wav2m\n");
 #endif
 
+  if( out == NULL){return -1;}
+
   uint32_t header[4];
   int16_t format, channels, bits;
   uint32_t rate;

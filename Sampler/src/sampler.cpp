@@ -16,10 +16,14 @@
 
 #include "samples/samples.h"
 #include "wav2mem.h"
+#include "bufferManager.h"
 
 
-EXTMEM unsigned int samples_mem[4000000]; //4M Words
-
+//
+// Buffer Manager
+#define EXTMEM_SIZE 4000000
+EXTMEM unsigned int samples_mem[EXTMEM_SIZE]; //4M Words
+bufferManager ramManager(samples_mem, EXTMEM_SIZE);
 
 
 //****************************************************************
@@ -108,27 +112,23 @@ void samplerInit(void)
   delaySecDryWet.gain(0, 1.0);   //full dry
   delaySecDryWet.gain(1, 0.0);       
 
-
-
-  for(int i=0; i<10689; i++){
-    samples_mem[i] = AudioSampleKick16_b[i];    
+  
+  //Fill Buffer
+  unsigned int *mem = ramManager.getNextPointer();
+  if(mem != NULL){
+    for(int i=0; i<10689; i++){
+      mem[i] = AudioSampleKick16_b[i];    
+    }
+    ramManager.allocate(10689);
   }
   
-  File dataFile = SD.open("KICK16.WAV");
-  uint32_t kick_size = 0;
-  
+
+  //Load File
+  File dataFile = SD.open("KICK16.WAV"); 
   if(dataFile){
-    kick_size = wav2m(&dataFile, &samples_mem[10689]);
+    ramManager.allocate( wav2m(&dataFile, ramManager.getNextPointer() ));
   }
  
-#ifdef DEBUG_SAMPLER    
-  char str_[100];
-  sprintf(str_, "sampler opend file: %d \n", kick_size);
-  Serial.print(str_);  
-#endif  
-
-  //debug_mem(&samples_mem[10689], kick_size);  
-
 #ifdef DEBUG_SAMPLER  
   Serial.print("Init Sampler\n");
 #endif  
@@ -236,23 +236,18 @@ void samplerSetParam(enum SAMPLER_EFFEKT effekt, uint8_t param, uint16_t val)
 }
 
 
-void playSecMem(uint8_t ch, uint16_t val )
+void playSecMem(int ch, uint16_t val )
 {
 
   float val_n = val/127.;
   if(val == 1){val_n = 0.0;}
 
   AudioNoInterrupts(); 
-  
-  if     (ch == 0){  
+  unsigned int * p = ramManager.getPointerFromIndex(ch);  
+  if(p != NULL){
     amp_mem_1.gain(val_n);
-    playMem1.play(&samples_mem[0]);
+    playMem1.play(p); 
   }
-  else if(ch == 1){  
-    amp_mem_2.gain(val_n);
-    playMem2.play(&samples_mem[10689]);
-  }
-
   AudioInterrupts(); 
 }
 

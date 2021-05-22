@@ -13,7 +13,7 @@ enum SAMPLER_EFFEKT
 void samplerInit(void);
 
 void playSec(const char *filename, byte velocity);
-void playSecMem(uint8_t ch, uint16_t val );
+void playSecMem(int ch, uint16_t val );
 
 void playDrum(const char *filename, byte velocity);
 
