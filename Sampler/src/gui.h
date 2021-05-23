@@ -3,7 +3,7 @@
 
 void gui_init(void);
 
-void gui_display_bpm(float bpm);
+void gui_state_machine(void);
 
 
 #endif /* GUI_H_ */

@@ -53,7 +53,7 @@ class EncoderKnob
     }
 
     void writeSteps(int32_t val){
-      knob->write(val);
+      knob->write(val*2);
     }
 
   private:
@@ -142,6 +142,11 @@ class EncoderKnopGroup
       {
         knobs[i]->write(val[i]);        
       }
+    }
+
+    void writeSingle(int32_t val, uint8_t n){
+      if(n>=m_knop_cnt){return;}
+      knobs[n]->writeSteps(val);
     }    
 
   private:
