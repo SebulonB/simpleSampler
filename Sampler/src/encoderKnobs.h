@@ -22,26 +22,18 @@ class EncoderKnob
     {
       if(knob == NULL){return 0;} 
 
-      int32_t apos = knob->read();
-      if     (apos < m_min_pos) 
-      {
-        apos = m_min_pos;
-        knob->write(apos);
-      }
-      else if(apos > m_max_pos)
-      {
-        apos = m_max_pos;
-        knob->write(apos);      
-      }
-      
-      if(apos != m_pos)
-      {
-        //do update stuff
-        m_pos = apos;
-        m_updated = true;
-      }
+      calc_pos();
       return m_pos/m_divider;
     }
+    
+    int32_t readSteps(void)
+    {
+      if(knob == NULL){return 0;}    
+      
+      calc_pos();   
+      return m_pos/2;
+    }
+
 
     bool updated(void)
     {
@@ -60,6 +52,10 @@ class EncoderKnob
       knob->write(m_divider * val);
     }
 
+    void writeSteps(int32_t val){
+      knob->write(val);
+    }
+
   private:
     Encoder* knob{ NULL };
     const uint8_t m_p1{0};
@@ -69,6 +65,27 @@ class EncoderKnob
     int32_t m_min_pos{0};
     int32_t m_pos{-999};
     bool m_updated{true};
+
+    void calc_pos(void){
+      int32_t apos = knob->read();
+      if     (apos < m_min_pos) 
+      {
+        apos = m_min_pos;
+        knob->write(apos);
+      }
+      else if(apos > m_max_pos)
+      {
+        apos = m_max_pos;
+        knob->write(apos);      
+      }
+      
+      if(apos != m_pos)
+      {
+        //do update stuff
+        m_pos = apos;
+        m_updated = true;
+      }
+    }
 };
 
 
@@ -97,6 +114,12 @@ class EncoderKnopGroup
       return knobs[knob]->read();
     }
 
+    int32_t readSteps(uint8_t knob)
+    {
+      if(knob>=m_knop_cnt){return 0;}
+      return knobs[knob]->readSteps();      
+    }
+
     bool updated(uint8_t knob)
     {
       if(knob>=m_knop_cnt){return 0.;}
@@ -112,7 +135,14 @@ class EncoderKnopGroup
       {
         knobs[i]->write(val[i]);        
       }
-    }     
+    } 
+
+    void write(int32_t *val, uint8_t n){
+      for(int i=0; i<m_knop_cnt;i++)
+      {
+        knobs[i]->write(val[i]);        
+      }
+    }    
 
   private:
     EncoderKnob *knobs[MAX_KNOB_NUMBER];

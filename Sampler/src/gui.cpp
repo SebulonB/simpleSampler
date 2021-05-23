@@ -41,7 +41,7 @@ void gui_display_bpm(float bpm)
   display.setTextColor(SSD1306_WHITE);        // Draw white text
   display.setCursor(0,0);             // Start at top-left corner
 
-  sprintf(str_, "bpm: %5.1f", bpm);
+  sprintf(str_, "bpm: %7.3f", bpm);
   display.print(str_);
   display.display();
 }

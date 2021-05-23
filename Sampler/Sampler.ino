@@ -39,7 +39,7 @@
 #define SDCARD_CS_PIN    BUILTIN_SDCARD
 
 #define BUTTON            34
-#define BUTTON_ENCODER    30
+#define BUTTON_ENCODER    32
 #define KNOB_CNT          1
 
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
@@ -59,11 +59,12 @@ bool   button_read = false;
 bool   button_encoder_read = false;
 
 uint8_t knob_pins[2*KNOB_CNT] = {
-  31, 32, // row 1
+  31, 30, // row 1
 };
 EncoderKnopGroup *p_knobs; //      = new EncoderKnopGroup(KNOB_CNT, knob_pins);
 
 uint32_t ui_timer = millis();
+uint32_t ui_timer500 = millis();
 
 USBHost myusb;
 USBHub hub1(myusb);
@@ -161,6 +162,8 @@ void loop() {
     button_encoder_read = false;
   }
 
+  //
+  //50 millisecond 
   if(millis() >= ui_timer)
   {
     ui_timer = millis() + 50;
@@ -171,16 +174,21 @@ void loop() {
       //rotary
       if(p_knobs->updated(i))
       { 
-        float  val = p_knobs->read(i);
-        sprintf(str_, "Knob: %6.3f\n", val);
-        
+        int32_t val = p_knobs->readSteps(i);
+        float vlf   = p_knobs->read(i);
+        sprintf(str_, "Knob: %d %f\n", val, vlf);
         Serial.print(str_); 
+       gui_display_bpm(vlf);
       }
     }
-
-    //update display
-    gui_display_bpm(clock_get_bpm());
   }     
 
-  //led_worker(LED_USER_MAIN, LED_SIGNAL_BANG);
+  //
+  //500ms 
+  if(millis() >= ui_timer500){
+    ui_timer500 = millis() + 500;
+
+  }
+
+
 }
