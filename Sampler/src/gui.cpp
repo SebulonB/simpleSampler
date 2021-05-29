@@ -28,6 +28,7 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
                           &SPI, OLED_DC, OLED_RESET, OLED_CS);
 
 
+
 //Buttons and Encoders
 Bounce button_bouncer = Bounce( BUTTON, 20); 
 Bounce button_bouncer_encoder = Bounce( BUTTON_ENCODER , 20); 
@@ -68,7 +69,9 @@ enum GUI_STATES
 };
 
 const char w_index_list[GUI_STATE_NUM] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
-widgetIdicator w_index(&display, w_index_list, GUI_STATE_NUM);
+const char w_param_l[]  PROGMEM = "paraM";
+widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
+widgetButton m_widbut(&display, w_param_l, 32, 0); 
 
 enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 bool gui_indexing = true;
@@ -94,20 +97,23 @@ void gui_init(void)
   w_index.setActive(true);
   // w_index.setIndex(6);
 
+  // display.setTextColor(SSD1306_WHITE);  
+  // display.setCursor(32, 0);             // Start at top-left corner
+  // display.setTextSize(1);
+  // display.print("params | map");    
+  m_widbut.forceDraw();
+  m_widbut.setActive(true);
+
   display.setTextColor(SSD1306_WHITE);  
-  display.setCursor(32, 0);             // Start at top-left corner
+  display.setCursor(32, 12);             // Start at top-left corner
   display.setTextSize(1);
   display.print("file: KICK16");
 
   display.setTextColor(SSD1306_WHITE);  
-  display.setCursor(32, 13);             // Start at top-left corner
+  display.setCursor(32, 24);             // Start at top-left corner
   display.setTextSize(1);
   display.print("midi: CH2 E3");  
 
-  display.setTextColor(SSD1306_WHITE);  
-  display.setCursor(32, 24);             // Start at top-left corner
-  display.setTextSize(1);
-  display.print("params | map");    
   display.display();
 
 }
@@ -143,12 +149,14 @@ if(gui_indexing){
   else if(knob == UI_KNOB_BUTTON2){
     gui_indexing = false;
     w_index.setActive(false);
+    m_widbut.setActive(true);
   }
 }
 
 if(knob == UI_KNOB_BUTTON1){
   gui_indexing = true;
   w_index.setActive(true);
+  m_widbut.setActive(false);  
 }
 
 
