@@ -6,8 +6,8 @@
 #include <String.h>
 
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
-#define DEBUG_WIDGET_INDICATOR 
-#define DEBUG_WIDGET_BUTTON
+// #define DEBUG_WIDGET_INDICATOR 
+// #define DEBUG_WIDGET_BUTTON
 
 class widgetIndicator{
   
@@ -126,7 +126,7 @@ class widgetButton {
 
     void init(void){
       m_width = 5 * m_text_size * strlen(m_label) + strlen(m_label) + 1;
-      m_hight = 9 * m_text_size;
+      m_hight = 8 * m_text_size;
 #ifdef DEBUG_WIDGET_BUTTON
     sprintf(str_, "widgetButton Init active(%s) label(%s) size(%3d %3d)\n", 
         (m_active?"true":"false"), m_label, m_width, m_hight);

@@ -69,9 +69,9 @@ enum GUI_STATES
 };
 
 const char w_index_list[GUI_STATE_NUM] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
-const char w_param_l[]  PROGMEM = "paraM";
+
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-widgetButton m_widbut(&display, w_param_l, 32, 0); 
+
 
 enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 bool gui_indexing = true;
