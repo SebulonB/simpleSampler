@@ -4,10 +4,12 @@
 #include <Adafruit_SSD1306.h>
 #include <String.h>
 #include <Bounce.h>
+#include <vector>
 
 #include "gui.h"
 #include "widgets.h"
 #include "encoderKnobs.h"
+#include "sampler_gui.h"
 
 
 
@@ -60,21 +62,21 @@ enum GUI_STATES
   GUI_STATE_SAMP4,
   GUI_STATE_SAMP5,
   GUI_STATE_SAMP6,
-  GUI_STATE_MAIN,
-  GUI_STATE_LFO,
-  // GUI_STATE_DELAY,
-  // GUI_STATE_REVERB,
-  GUI_STATE_CLOCK,  
+  // GUI_STATE_MAIN,
+  // GUI_STATE_LFO,
+  // GUI_STATE_CLOCK,  
   GUI_STATE_NUM,
 };
 
-const char w_index_list[GUI_STATE_NUM] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
-
-widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-
-
 enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 bool gui_indexing = true;
+
+const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
+
+widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
+std::vector<widgetSamplerSelection *> w_samplers; 
+
+
 
 
 void gui_init(void)
@@ -92,29 +94,16 @@ void gui_init(void)
   pinMode(BUTTON_ENCODER,INPUT_PULLUP);
   p_knobs = new EncoderKnopGroup(KNOB_CNT, knob_pins);  
 
+  for(int i=0; i<6; i++){
+    widgetSamplerSelection * w = new widgetSamplerSelection(&display, 0);
+    w_samplers.push_back(w);
+  }
+
 
   w_index.forceDraw();
   w_index.setActive(true);
-  // w_index.setIndex(6);
-
-  // display.setTextColor(SSD1306_WHITE);  
-  // display.setCursor(32, 0);             // Start at top-left corner
-  // display.setTextSize(1);
-  // display.print("params | map");    
-  m_widbut.forceDraw();
-  m_widbut.setActive(true);
-
-  display.setTextColor(SSD1306_WHITE);  
-  display.setCursor(32, 12);             // Start at top-left corner
-  display.setTextSize(1);
-  display.print("file: KICK16");
-
-  display.setTextColor(SSD1306_WHITE);  
-  display.setCursor(32, 24);             // Start at top-left corner
-  display.setTextSize(1);
-  display.print("midi: CH2 E3");  
-
-  display.display();
+  w_samplers.at(0)->setIndex(0, true);
+  w_samplers.at((uint16_t)gui_state)->reset();  
 
 }
 
@@ -127,6 +116,7 @@ void gui_display_bpm(float bpm)
 
 
 
+
 void gui_change_state(enum UI_KNOBS knob, unsigned int val)
 {
 #ifdef GUI_DEBUG
@@ -134,7 +124,6 @@ void gui_change_state(enum UI_KNOBS knob, unsigned int val)
   sprintf(str_, "gui set state: %d %d\n", (int)knob, val);
   Serial.print(str_);
 #endif
-
 
 if(gui_indexing){
   if(knob == UI_KNOB_ROTARY)
@@ -149,15 +138,37 @@ if(gui_indexing){
   else if(knob == UI_KNOB_BUTTON2){
     gui_indexing = false;
     w_index.setActive(false);
-    m_widbut.setActive(true);
+    //reset
+    display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
+    for(auto w : w_samplers){w->setActive(false);}
+    if((uint16_t)gui_state <= w_samplers.size()){
+      w_samplers.at((uint16_t)gui_state)->setIndex(0, true);
+      w_samplers.at((uint16_t)gui_state)->reset();
+      p_knobs->writeSingle(0, 0); 
+    }    
+  }
+}
+else {
+  if(knob == UI_KNOB_ROTARY){
+    if((uint16_t)gui_state < w_samplers.size()){
+      if(val>=w_samplers.at((uint16_t)gui_state)->getButtonCnt()){
+        p_knobs->writeSingle(val-1, 0); 
+      }  
+      w_samplers.at((uint16_t)gui_state)->setIndex(val, true);
+    }      
   }
 }
 
 if(knob == UI_KNOB_BUTTON1){
   gui_indexing = true;
   w_index.setActive(true);
-  m_widbut.setActive(false);  
+  if((uint16_t)gui_state < w_samplers.size()){ 
+    w_samplers.at((uint16_t)gui_state)->reset();
+  }
 }
+
+
+
 
 
 //  switch(gui_state){

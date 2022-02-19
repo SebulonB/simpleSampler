@@ -23,14 +23,14 @@
 #include <math.h>
 #include <string.h>
 
-#include "src/sampler.h"
-#include "src/midi_handler.h"
-#include "src/device.h"
-#include "src/led.h"
-#include "src/clock.h"
-#include "src/gui.h"
-#include "src/encoderKnobs.h"
-#include "src/wav2mem.h"
+#include "sampler.h"
+#include "midi_handler.h"
+#include "device.h"
+#include "led.h"
+#include "clock.h"
+#include "gui.h"
+#include "encoderKnobs.h"
+#include "wav2mem.h"
 
 //****************************************************************
 //                           | Config |
