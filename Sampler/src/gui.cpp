@@ -72,10 +72,18 @@ enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 bool gui_indexing = true;
 
 const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
+const char *w_labels[]  = {"flub(1)", 
+                                 "flub(2)", 
+                                 "flub(3)", 
+                                 "flub(4)", 
+                                 "flub(6)", 
+                                 "flub(7)", 
+                                 "flub(8)",  
+                                 "flub(9)",
+                                 "flub(10)"};
 
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-std::vector<widgetSamplerSelection *> w_samplers; 
-
+widgetList list(&display, 32, 0, 128-32, 32);
 
 
 
@@ -94,16 +102,9 @@ void gui_init(void)
   pinMode(BUTTON_ENCODER,INPUT_PULLUP);
   p_knobs = new EncoderKnopGroup(KNOB_CNT, knob_pins);  
 
-  for(int i=0; i<6; i++){
-    widgetSamplerSelection * w = new widgetSamplerSelection(&display, 0);
-    w_samplers.push_back(w);
-  }
-
-
-  w_index.forceDraw();
   w_index.setActive(true);
-  w_samplers.at(0)->setIndex(0, true);
-  w_samplers.at((uint16_t)gui_state)->reset();  
+  w_index.forceDraw();
+
 
 }
 
@@ -138,33 +139,41 @@ if(gui_indexing){
   else if(knob == UI_KNOB_BUTTON2){
     gui_indexing = false;
     w_index.setActive(false);
+    w_index.forceDraw();
     //reset
     display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
-    for(auto w : w_samplers){w->setActive(false);}
-    if((uint16_t)gui_state <= w_samplers.size()){
-      w_samplers.at((uint16_t)gui_state)->setIndex(0, true);
-      w_samplers.at((uint16_t)gui_state)->reset();
-      p_knobs->writeSingle(0, 0); 
-    }    
+
+    for(int i=0; i<9; i++){
+      widgetLabel *la= new widgetLabel(&display, w_labels[i]);
+      list.pushWidget(la);
+    }
+
+    list.setIndex(0);  
+    list.setActive(true);  
+    list.forceDraw();
+
   }
 }
 else {
   if(knob == UI_KNOB_ROTARY){
-    if((uint16_t)gui_state < w_samplers.size()){
-      if(val>=w_samplers.at((uint16_t)gui_state)->getButtonCnt()){
-        p_knobs->writeSingle(val-1, 0); 
-      }  
-      w_samplers.at((uint16_t)gui_state)->setIndex(val, true);
-    }      
+    if(list.setIndex(val)){    
+      list.forceDraw();
+    }
+    else{
+      uint16_t max = list.getIndexMax();
+      if(max != 0){max-=1;}
+      p_knobs->writeSingle(max, 0); 
+    }
   }
 }
 
 if(knob == UI_KNOB_BUTTON1){
   gui_indexing = true;
   w_index.setActive(true);
-  if((uint16_t)gui_state < w_samplers.size()){ 
-    w_samplers.at((uint16_t)gui_state)->reset();
-  }
+  w_index.forceDraw();  
+  list.setActive(false);
+  list.forceDraw();
+
 }
 
 

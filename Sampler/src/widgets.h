@@ -7,42 +7,55 @@
 
 #include "encoderKnobs.h"
 
-class widget {
-  protected:
-    Adafruit_SSD1306 *m_display{NULL};
-
-};
 
 
 
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
-// #define DEBUG_WIDGET_INDICATOR 
-// #define DEBUG_WIDGET_LABEL
+#define DEBUG_WIDGET_INDICATOR 
+#define DEBUG_WIDGET_LABEL
+#define DEBUG_WIDGET_LIST
 
-class widgetIndicator : widget{
+
+
+class widget {
+
+  public:
+    void getPos(uint16_t &x, uint16_t &y);
+    void setPos(uint16_t x,  uint16_t y);
+
+    void getSize(uint16_t &w, uint16_t &h);
+    void setSize(uint16_t w,  uint16_t h);
+
+    void forceDraw(void){draw();}    
+    void setActive(bool b){m_active=b;} 
+
+  protected:
+    Adafruit_SSD1306 *m_display{NULL};
+    uint16_t    m_pos_x{0};
+    uint16_t    m_pos_y{0};
+    uint16_t    m_width{0};
+    uint16_t    m_height{0};    
+
+    bool        m_active{false};
+
+    virtual void draw();
+
+};
+
+
+class widgetIndicator : public widget{
   
   public:
     widgetIndicator(Adafruit_SSD1306 *disp, const char *l, unsigned int max);
     ~widgetIndicator(){};
 
-    void forceDraw(void){draw();}
-    void setActive(bool a);
     void setIndex(unsigned int x);
-    void setXY(unsigned int x, unsigned int y);  
-    void setSize(unsigned int w, unsigned int h, unsigned int text);
 
   private:
     char m_index_list[WIDGET_INDICATOR_MAX_ENTRIES];
-
-    int          m_width{25};
-    int          m_hight{32}; 
-    unsigned int m_pos_x{0};
-    unsigned int m_pos_y{0};
     unsigned int m_test_s{3};
-
     unsigned int m_max{0};
     unsigned int m_index{0};
-    bool m_active{false};
 
 #ifdef DEBUG_WIDGET_INDICATOR
     char str_[100];
@@ -53,26 +66,19 @@ class widgetIndicator : widget{
 
 
 
-class widgetLabel : widget{
+class widgetLabel : public widget{
 
   public:
+    widgetLabel(Adafruit_SSD1306 *disp, const char *label);
+    widgetLabel(Adafruit_SSD1306 *disp, const __FlashStringHelper *label);
     widgetLabel(Adafruit_SSD1306 *disp, const char *label, uint16_t x, uint16_t y);
+    widgetLabel(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t x, uint16_t y);
 
-    void forceDraw(void){draw();}
-    void setActive(bool a);
     void setText(const char *label);
 
-
   private:   
-    const char *m_label{NULL};
-    uint8_t     m_text_size{1};
-    bool        m_active{false};
-
-    uint16_t    m_pos_x;
-    uint32_t    m_pos_y;
-
-    uint16_t    m_width;
-    uint16_t    m_hight;
+    const char * m_label{NULL};
+    uint8_t      m_text_size{1};
 
 #ifdef DEBUG_WIDGET_LABEL
     char str_[100];
@@ -84,40 +90,35 @@ class widgetLabel : widget{
 };
 
 
-class widgetPage : widget {
+
+
+class widgetList : public widget {
+
   public:
-    widgetPage(Adafruit_SSD1306 *disp, const char *label);
+    widgetList( Adafruit_SSD1306 *disp, 
+                const uint16_t x, const uint16_t y, 
+                const uint16_t width, const uint16_t height);
 
-    void forceDraw(void){draw();}
-    void setActive(bool b){m_active=b;}
+    void pushWidget(widget *w);
 
-    void setButtonIndex(uint16_t t);
-    uint16_t getButtonIndex(void){return m_button_index;}
-    
-    void pushButton(widgetLabel *p){m_buttons.push_back(p);}
-    void pushLabel(widgetLabel *p) {m_labels.push_back(p);}
+    bool setIndex(u_int16_t index);
+    uint16_t getIndex(void)   {return m_index;};
+    uint16_t getIndexMax(void){return m_widgets.size();}
 
-    void signalRotary(EncoderKnopGroup *p_knobs);
-    void signalButton(uint8_t button, bool pressed);
-    
 
   private:
-    const char *m_name{NULL};
+    std::vector<widget *> m_widgets;
 
-    uint16_t m_button_index;
-    std::vector<widgetLabel *> m_buttons;
-    std::vector<widgetLabel *> m_labels;    
+    uint16_t m_seperator{3};
+    uint16_t m_index{0};
 
-    bool     m_active{false};   
-    bool     m_active_display{false};
+    void draw();
 
-#ifdef DEBUG_WIDGET_PAGE
+#ifdef DEBUG_WIDGET_LIST
     char str_[100];
 #endif
 
-    void init();
-    void draw();
-    
+
 };
 
 
