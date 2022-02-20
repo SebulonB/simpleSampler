@@ -9,6 +9,7 @@
 #include "gui.h"
 #include "widgets.h"
 #include "encoderKnobs.h"
+#include "gui_device.h"
 
 
 
@@ -70,22 +71,11 @@ enum GUI_STATES
 
 enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 static bool gui_indexing = true;
-static bool gui_edit_param = false;
-
 const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
-const char *w_labels[]  = {      "Attack", 
-                                 "Decay", 
-                                 "Sustain", 
-                                 "Release", 
-                                 "Volume", 
-                                 "Start", 
-                                 "flub(8)",  
-                                 "flub(9)",
-                                 "flub(10)"};
+
 
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-widgetList list(&display, 32, 0, 128-32, 32);
-
+guiDeviceSampler m_sampler(&display, 32, 0, 128-32, 32);
 
 
 void gui_init(void)
@@ -108,6 +98,8 @@ void gui_init(void)
   w_index.setActive(true);
   w_index.forceDraw();
 
+  m_sampler.setActive(false);
+  m_sampler.forceDraw();
 
 }
 
@@ -129,90 +121,63 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
 //   Serial.print(str_);
 // #endif
 
-if(gui_indexing){
-  if(knob == UI_KNOB_ROTARY)
-  {
-    if(val>=GUI_STATE_NUM){
-      val = (GUI_STATE_NUM-1);
-      p_knobs->writeSingle(val, 0); 
-    }
-    if(val<0){
-       val = 0;
-      p_knobs->writeSingle(val, 0);      
-    }
-    w_index.setIndex(val);    
-    gui_state = (enum GUI_STATES)val;
-  }
-  else if(knob == UI_KNOB_BUTTON2){
-    gui_indexing = false;
-    w_index.setActive(false);
-    w_index.forceDraw();
-    //reset
-    display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
-
-    for(int i=0; i<9; i++){
-      widgetParamFloat *la= new widgetParamFloat (&display, w_labels[i], 55, widgetParamFloat::SECONDS);
-      la->setMax(9000);
-      la->setValue(i*10 + 25);
-      list.pushWidget(la);
-    }
-
-    list.setIndex(0);  
-    list.setActive(true);  
-    list.forceDraw();
-
-  }
-}
-else {
-  if(knob == UI_KNOB_ROTARY){
-
-    if(gui_edit_param){
-      widgetParam* w = reinterpret_cast<widgetParam* >(list.getActiveWidget());
-      if(w==NULL){return;}
-      if(val==0){return;}
-      w->incValue((val>0 ? true : false));
-      w->forceDraw();
-      p_knobs->writeSingle(0, 0); 
-    }
-    else
+  if(gui_indexing){
+    if(knob == UI_KNOB_ROTARY)
     {
-      if(val == 0){return;}
-      if(list.incIndex((val>0 ? true : false))){
-        list.forceDraw();
+      if(val>=GUI_STATE_NUM){
+        val = (GUI_STATE_NUM-1);
+        p_knobs->writeSingle(val, 0); 
       }
-      p_knobs->writeSingle(0, 0); 
+      if(val<0){
+        val = 0;
+        p_knobs->writeSingle(val, 0);      
+      }
+      w_index.setIndex(val);    
+      gui_state = (enum GUI_STATES)val;
     }
-  }
-  else if(knob == UI_KNOB_BUTTON2)
+    else if(knob == UI_KNOB_BUTTON2){
+      gui_indexing = false;
+      w_index.setActive(false);
+      w_index.forceDraw();
+      //reset
+      display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
+
+      m_sampler.setActive(true);
+      m_sampler.forceDraw();
+    }
+  } 
+  //interact with device
+  else 
   {
-    gui_edit_param = !gui_edit_param;
-    widgetParam* w = reinterpret_cast<widgetParam* >(list.getActiveWidget());
-    if(w!=NULL){
-      w->setEdit(gui_edit_param);
+    Serial.print("list interaction\n");
+
+    if(knob == UI_KNOB_ROTARY)
+    {
+      if(val==0){return;}
+      m_sampler.incRotary((val>0 ? true : false));
+      m_sampler.forceDraw();
       p_knobs->writeSingle(0, 0); 
-      w->forceDraw();
     }
+
+    else if(knob == UI_KNOB_BUTTON2)
+    {
+      m_sampler.setEdit();
+      m_sampler.forceDraw();
+      p_knobs->writeSingle(0, 0); 
+    }
+  }//end gui index
+
+
+  if(knob == UI_KNOB_BUTTON1){
+    gui_indexing = true;
+    w_index.setActive(true);
+    w_index.forceDraw();  
+
+    m_sampler.setActive(false);
+    m_sampler.setEdit(false);
+
+    m_sampler.forceDraw();
   }
-}
-
-if(knob == UI_KNOB_BUTTON1){
-  gui_indexing = true;
-  w_index.setActive(true);
-  w_index.forceDraw();  
-
-  gui_edit_param = false;
-  widgetParam* w = reinterpret_cast<widgetParam* >(list.getActiveWidget());
-  if(w!=NULL){
-    w->setEdit(gui_edit_param);
-    w->forceDraw();
-  }
-
-  list.setActive(false);
-  list.forceDraw();
-
-}
-
-
 }
 
 

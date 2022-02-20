@@ -109,6 +109,8 @@ widgetLabel::widgetLabel(Adafruit_SSD1306 *disp, const __FlashStringHelper *labe
   m_label    = reinterpret_cast<const char *>(label);    
   m_pos_x = x;
   m_pos_y = y;
+  m_widget_type  = widget::LABEL;  
+
   init();
 };
 
@@ -120,6 +122,7 @@ widgetLabel::widgetLabel(Adafruit_SSD1306 *disp, const char *label, uint16_t x, 
   m_display = disp;  
   m_pos_x = x;
   m_pos_y = y;
+  m_widget_type  = widget::LABEL;    
 
   init();
 };
@@ -183,6 +186,8 @@ widgetList::widgetList( Adafruit_SSD1306 *disp,
   m_width  = width;
   m_height = height;
 
+  m_widget_type  = widget::LIST;  
+
 #ifdef DEBUG_WIDGET_LIST
   sprintf(str_, "create widget list: x(%d), y(%d), width(%d), height(%d)\n",
          m_pos_x, m_pos_y, m_width, m_height );
@@ -209,6 +214,12 @@ void widgetList::pushWidget(widget *w)
 bool widgetList::incIndex(bool inc)
 {
   uint16_t index = m_index;
+
+#ifdef DEBUG_WIDGET_LIST
+  sprintf(str_, "widget inc index index(%d)\n", m_index );
+  Serial.print(str_);    
+#endif
+
   if(inc){
     index+=1;
   }
@@ -301,6 +312,7 @@ widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, ui
   m_display      = disp;
   m_value_x_pos  = val_x_pos;
   m_unit         = u;
+  m_widget_type  = widget::PARAM;
   m_param_type   = FLOAT;
   m_label        = new widgetLabel(disp, label); 
   init();
@@ -312,6 +324,7 @@ widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHe
   m_display      = disp;
   m_value_x_pos  = val_x_pos;
   m_unit         = u;
+  m_widget_type  = widget::PARAM;  
   m_param_type   = FLOAT;
   m_label        = new widgetLabel(disp, label); 
   init();
@@ -336,7 +349,7 @@ void widgetParamFloat::setValue(float m)
   if(m <= m_min){m=m_min;}
 
   //clear last digit
-  if        (m >= 9999.5){
+  if (m >=  999.9){
     m           = (uint32_t)std::round(m);
     uint32_t ml = (uint32_t)m%10;
     m  -= ml;
@@ -380,12 +393,7 @@ void widgetParamFloat::inc_value(bool inc)
 uint16_t widgetParamFloat::cal_val_str(char *str)
 {
   //generate value string
-  uint16_t l=0;
-
-  char str_[100];
-  sprintf(str_, "set value %f\n", m_value);
-  Serial.print(str_);
- 
+  uint16_t l=0; 
   if(     m_unit == PERCENT){
     sprintf(str, "%5.1f", m_value);
     l = strlen(str);

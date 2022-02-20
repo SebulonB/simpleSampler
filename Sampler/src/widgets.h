@@ -13,13 +13,21 @@
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
 // #define DEBUG_WIDGET_INDICATOR 
 // #define DEBUG_WIDGET_LABEL
-// #define DEBUG_WIDGET_LIST
+#define DEBUG_WIDGET_LIST
 // #define DEBUG_WIDGET_PARAM_FLOAT
 
 
 class widget {
 
   public:
+    enum WIDGET_TYPE{
+      UNKNOWN,
+      LIST,
+      LABEL,
+      PARAM,
+      DEVICE,
+    };
+
     void getPos(uint16_t &x, uint16_t &y);
     void setPos(uint16_t x,  uint16_t y);
 
@@ -29,12 +37,18 @@ class widget {
     void forceDraw(void){draw();}    
     void setActive(bool b){m_active=b;} 
 
+    bool isWidgetType(enum WIDGET_TYPE t){
+      return (t == m_widget_type) ? true : false;
+    }
+
   protected:
     Adafruit_SSD1306 *m_display{NULL};
     uint16_t    m_pos_x{0};
     uint16_t    m_pos_y{0};
     uint16_t    m_width{0};
     uint16_t    m_height{0};    
+
+    enum  WIDGET_TYPE m_widget_type{UNKNOWN};      
 
     bool        m_active{false};
 
