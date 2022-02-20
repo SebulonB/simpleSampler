@@ -179,7 +179,7 @@ class widgetParamFloat : public widgetParam {
     uint16_t  m_value_text_size{0};
 
     uint16_t  m_value_width{0};
-    uint16_t  m_value_last_width{0}; //used to clear txt
+    uint16_t  m_value_width_max{0}; //used to clear txt
 
     void init();
     uint16_t cal_val_str(char* str);

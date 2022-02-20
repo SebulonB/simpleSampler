@@ -9,7 +9,7 @@
 #include "gui.h"
 #include "widgets.h"
 #include "encoderKnobs.h"
-#include "sampler_gui.h"
+
 
 
 
@@ -151,7 +151,7 @@ if(gui_indexing){
     display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
 
     for(int i=0; i<9; i++){
-      widgetParamFloat *la= new widgetParamFloat (&display, w_labels[i], 58, widgetParamFloat::SECONDS);
+      widgetParamFloat *la= new widgetParamFloat (&display, w_labels[i], 55, widgetParamFloat::SECONDS);
       la->setMax(9000);
       la->setValue(i*10 + 25);
       list.pushWidget(la);

@@ -4,6 +4,7 @@
 #include <Adafruit_SSD1306.h>
 #include <String.h>
 #include <vector>
+#include <cmath>
 
 #include "widgets.h"
 
@@ -327,7 +328,6 @@ void widgetParamFloat::init()
   cal_val_str(str);
 
   m_width = m_value_x_pos + m_value_width;
-  m_value_last_width = m_value_width;
 }
 
 void widgetParamFloat::setValue(float m)
@@ -336,14 +336,14 @@ void widgetParamFloat::setValue(float m)
   if(m <= m_min){m=m_min;}
 
   //clear last digit
-  if        (m >= 1000){
-    m           = (uint32_t)m;
+  if        (m >= 9999.5){
+    m           = (uint32_t)std::round(m);
     uint32_t ml = (uint32_t)m%10;
     m  -= ml;
   }
   //round
-  else if( m >= 100){
-    m = (uint32_t)m;     
+  else if( m >= 99.9){
+    m = (uint32_t)std::round(m);     
   }
 
   m_value = m;
@@ -359,10 +359,10 @@ void widgetParamFloat::inc_value(bool inc)
   }  
 
   if(m_unit == SECONDS){
-    if(m_value >= 1000){
+    if(m_value >= 1000.){
       iv *=100;
     }
-    else if(m_value >= 100){
+    else if(m_value >= 100.){
       iv *=10;
     }
   }
@@ -381,6 +381,10 @@ uint16_t widgetParamFloat::cal_val_str(char *str)
 {
   //generate value string
   uint16_t l=0;
+
+  char str_[100];
+  sprintf(str_, "set value %f\n", m_value);
+  Serial.print(str_);
  
   if(     m_unit == PERCENT){
     sprintf(str, "%5.1f", m_value);
@@ -388,10 +392,10 @@ uint16_t widgetParamFloat::cal_val_str(char *str)
     sprintf(str+l, "%%");
   }
   else if(m_unit == SECONDS){
-    if(     m_value < 100.){
+    if(     m_value < 100.0){
       sprintf(str, "%4.1f", m_value);
     }
-    else if(m_value >= 100){
+    else if(m_value >= 100.0){
       sprintf(str, "%0.0f", m_value);      
     }
     l = strlen(str);
@@ -415,20 +419,23 @@ void widgetParamFloat::draw()
   m_label->forceDraw();
 
   char str[10];
+  memset(str, 0, 10*sizeof(char));
   cal_val_str(str);
   uint16_t x=m_pos_x+m_value_x_pos;
   
-  //clear
-  m_display->fillRect(x, m_pos_y, m_value_last_width, m_height, SSD1306_WHITE);
+  //clear Value on Screen
+  if(m_value_width_max < m_value_width){
+    m_value_width_max = m_value_width;
+  }
+  m_display->fillRect(x, m_pos_y, m_value_width_max, m_height, SSD1306_BLACK);
 
   if(m_active && m_edit){
+    m_display->fillRect(x, m_pos_y, m_value_width, m_height, SSD1306_WHITE);    
     m_display->setTextColor(SSD1306_INVERSE);        // Draw white text
   }
   else{
-    m_display->fillRect(x, m_pos_y, m_value_width, m_height, SSD1306_BLACK);
     m_display->setTextColor(SSD1306_WHITE);        // Draw white text       
   }  
-  m_value_last_width = m_value_width;
 
   m_display->setTextSize(m_value_text_size);      
   m_display->setCursor(x+1, m_pos_y+1);             // Start at top-left corner
