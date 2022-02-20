@@ -75,7 +75,7 @@ const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'
 
 
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-guiDeviceSampler m_sampler(&display, 32, 0, 128-32, 32);
+std::vector<guiDeviceSampler *> m_gui_devices;
 
 
 void gui_init(void)
@@ -98,9 +98,13 @@ void gui_init(void)
   w_index.setActive(true);
   w_index.forceDraw();
 
-  m_sampler.setActive(false);
-  m_sampler.forceDraw();
-
+  //and sampers
+  for(unsigned int i=0; i<6; i++){
+    m_gui_devices.push_back(new guiDeviceSampler(&display, i, 32, 0, 128-32, 32));
+    if(i == w_index.getIndex()){
+      m_gui_devices.at(i)->forceDraw();
+    }
+  }
 }
 
 
@@ -132,7 +136,10 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
         val = 0;
         p_knobs->writeSingle(val, 0);      
       }
-      w_index.setIndex(val);    
+      w_index.setIndex(val);   
+      m_gui_devices.at(w_index.getIndex())->setActive(false);
+      m_gui_devices.at(w_index.getIndex())->rstIndex(); 
+      m_gui_devices.at(w_index.getIndex())->forceDraw();      
       gui_state = (enum GUI_STATES)val;
     }
     else if(knob == UI_KNOB_BUTTON2){
@@ -141,28 +148,25 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
       w_index.forceDraw();
       //reset
       display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
-
-      m_sampler.setActive(true);
-      m_sampler.forceDraw();
+      m_gui_devices.at(w_index.getIndex())->setActive(true);
+      m_gui_devices.at(w_index.getIndex())->forceDraw();
     }
   } 
   //interact with device
   else 
   {
-    Serial.print("list interaction\n");
-
     if(knob == UI_KNOB_ROTARY)
     {
       if(val==0){return;}
-      m_sampler.incRotary((val>0 ? true : false));
-      m_sampler.forceDraw();
+      m_gui_devices.at(w_index.getIndex())->incRotary((val>0 ? true : false));
+      m_gui_devices.at(w_index.getIndex())->forceDraw();
       p_knobs->writeSingle(0, 0); 
     }
 
     else if(knob == UI_KNOB_BUTTON2)
     {
-      m_sampler.setEdit();
-      m_sampler.forceDraw();
+      m_gui_devices.at(w_index.getIndex())->setEdit();
+      m_gui_devices.at(w_index.getIndex())->forceDraw();
       p_knobs->writeSingle(0, 0); 
     }
   }//end gui index
@@ -173,10 +177,10 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
     w_index.setActive(true);
     w_index.forceDraw();  
 
-    m_sampler.setActive(false);
-    m_sampler.setEdit(false);
+    m_gui_devices.at(w_index.getIndex())->setActive(false);
+    m_gui_devices.at(w_index.getIndex())->setEdit(false);
 
-    m_sampler.forceDraw();
+    m_gui_devices.at(w_index.getIndex())->forceDraw();
   }
 }
 

@@ -16,7 +16,7 @@
 
 
 //------ guiDeviceSampler -------
-guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp, 
+guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp, const uint16_t id,
                       const uint16_t x, const uint16_t y, 
                       const uint16_t width, const uint16_t height) : guiDevice()
 {
@@ -28,8 +28,9 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   m_width  = width;
   m_height = height;
 
-  m_param_y_pos = PARAM_VALUE_POS;
+  m_id = id;
 
+  m_param_y_pos = PARAM_VALUE_POS;
   m_widget_type  = widget::DEVICE;      
 
 
@@ -61,8 +62,8 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   param_f->setMax(9000);
   m_param_list->pushWidget(param_f);
 
-  param_f = new widgetParamFloat(m_display, F("Sustain"), m_param_y_pos, widgetParamFloat::SECONDS);
-  param_f->setMax(9000);
+  param_f = new widgetParamFloat(m_display, F("Sustain"), m_param_y_pos, widgetParamFloat::PERCENT);
+  param_f->setMax(100);
   m_param_list->pushWidget(param_f);
 
   param_f = new widgetParamFloat(m_display, F("Relase"), m_param_y_pos, widgetParamFloat::SECONDS);
@@ -100,7 +101,11 @@ void guiDevice::inc_rotary(bool inc)
   else{
     m_param_list->incIndex(inc);
   }
+}
 
+void guiDevice::rstIndex()
+{
+  m_param_list->setIndex(0);
 }
 
 

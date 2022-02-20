@@ -3,7 +3,7 @@
 #include "widgets.h"
 #include <vector>
 
-#define DEBUG_GUI_DEVICE_SAMPLER
+//#define DEBUG_GUI_DEVICE_SAMPLER
 
 
 
@@ -21,8 +21,11 @@ class guiDevice : public widget
       m_edit = en;
       set_edit();
     }
+    void rstIndex();
 
   protected:
+    uint16_t m_id{0};
+
     bool m_edit{false};
     u_int16_t m_param_y_pos{0};
 
@@ -49,7 +52,7 @@ class guiDevice : public widget
 class guiDeviceSampler : public guiDevice
 {
   public:
-    guiDeviceSampler( Adafruit_SSD1306 *disp, 
+    guiDeviceSampler( Adafruit_SSD1306 *disp, const uint16_t id,
                       const uint16_t x, const uint16_t y, 
                       const uint16_t width, const uint16_t height);
 

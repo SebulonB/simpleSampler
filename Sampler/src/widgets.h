@@ -13,7 +13,7 @@
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
 // #define DEBUG_WIDGET_INDICATOR 
 // #define DEBUG_WIDGET_LABEL
-#define DEBUG_WIDGET_LIST
+//#define DEBUG_WIDGET_LIST
 // #define DEBUG_WIDGET_PARAM_FLOAT
 
 
@@ -64,6 +64,7 @@ class widgetIndicator : public widget{
     ~widgetIndicator(){};
 
     void setIndex(unsigned int x);
+    unsigned int getIndex(){return m_index;}
 
   private:
     char m_index_list[WIDGET_INDICATOR_MAX_ENTRIES];
