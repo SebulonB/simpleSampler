@@ -118,13 +118,14 @@ void loop() {
   myusb.Task();
   midi_host.read();  
 
-
+  gui_state_machine();   
+  
   //
   //50 millisecond 
   if(millis() >= ui_timer)
   {
-    ui_timer = millis() + 50;
-    gui_state_machine();
+    ui_timer = millis() + 10;
+ 
   }     
 
   //

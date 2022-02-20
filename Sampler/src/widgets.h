@@ -11,10 +11,10 @@
 
 
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
-#define DEBUG_WIDGET_INDICATOR 
-#define DEBUG_WIDGET_LABEL
-#define DEBUG_WIDGET_LIST
-#define DEBUG_WIDGET_PARAM_FLOAT
+// #define DEBUG_WIDGET_INDICATOR 
+// #define DEBUG_WIDGET_LABEL
+// #define DEBUG_WIDGET_LIST
+// #define DEBUG_WIDGET_PARAM_FLOAT
 
 
 class widget {
@@ -103,14 +103,16 @@ class widgetList : public widget {
     void pushWidget(widget *w);
 
     bool setIndex(u_int16_t index);
+    bool incIndex(bool inc);
     uint16_t getIndex(void)   {return m_index;};
     uint16_t getIndexMax(void){return m_widgets.size();}
+    widget *getActiveWidget();
 
 
   private:
     std::vector<widget *> m_widgets;
 
-    uint16_t m_seperator{3};
+    uint16_t m_seperator{2};
     uint16_t m_index{0};
 
     void draw();
@@ -122,7 +124,29 @@ class widgetList : public widget {
 
 };
 
-class widgetParamFloat : public widget {
+class widgetParam : public widget {
+  
+  public:
+    enum PARAM_TYPE{
+      FLOAT,
+    };
+  
+    void setEdit(bool e){m_edit = e;}
+    void incValue(bool inc);
+
+  protected:
+    bool     m_edit{false};  
+    uint16_t m_param_width{0};
+    uint32_t m_millis_old;
+    uint32_t m_millis_diff;
+    uint16_t m_millis_diff_shure;
+    enum    PARAM_TYPE m_param_type{FLOAT};
+
+    virtual void inc_value(bool inc);
+
+};
+
+class widgetParamFloat : public widgetParam {
 
   public:
     enum UNIT{
@@ -132,36 +156,36 @@ class widgetParamFloat : public widget {
 
     widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u);
     widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t val_x_pos, enum UNIT u);    
+  
+    //API
+    enum UNIT getUnit(){return m_unit;}
 
-    void  setValue(float m){
-      if(m<m_min){ m=m_min;}
-      if(m>m_max){ m=m_max;}
-      m_value = m;
-    }
+    void  setValue(float m);
     float getValue(void){return m_value;}
-
     void  setMin(float m){m_min = m;}
     float getMin(void){return m_min;}
-    
     void  setMax(float m){m_max = m;}
     float getMax(void){return m_max;}
-    
-  
+
   private:
     widgetLabel *m_label;
-
-    enum UNIT m_unit{PERCENT};
-    uint16_t  m_val_x_pos{0};
-    uint16_t  m_text_size;
-    bool      m_edit{false};
 
     float m_min{0.};
     float m_max{0.};
     float m_value{0.};
 
+    enum UNIT m_unit{PERCENT};
+    uint16_t  m_value_x_pos{0};
+    uint16_t  m_value_text_size{0};
+
+    uint16_t  m_value_width{0};
+    uint16_t  m_value_last_width{0}; //used to clear txt
+
     void init();
     uint16_t cal_val_str(char* str);
+    void inc_value(bool inc);
     void draw();
+
 
 #ifdef DEBUG_WIDGET_PARAM_FLOAT
     char str_[100];

@@ -1,5 +1,8 @@
 #ifndef ENCODER_KNOBS_H_
 #define ENCODER_KNOBS_H_
+// This optional setting causes Encoder to use more optimized code,
+// It must be defined before Encoder.h is included.
+#define ENCODER_OPTIMIZE_INTERRUPTS
 #include <Encoder.h>
 
 #define MAX_KNOB_NUMBER           1
@@ -31,9 +34,12 @@ class EncoderKnob
       if(knob == NULL){return 0;}    
       
       calc_pos();   
-      return m_pos/2;
+      return m_pos;
     }
-
+    
+    void rst_updated(){
+      m_updated = false;
+    }
 
     bool updated(void)
     {
@@ -62,12 +68,12 @@ class EncoderKnob
     const uint8_t m_p2{0};
     float m_divider{127.*1};
     int32_t m_max_pos{127*1};
-    int32_t m_min_pos{0};
+    int32_t m_min_pos{-999};
     int32_t m_pos{-999};
     bool m_updated{true};
 
     void calc_pos(void){
-      int32_t apos = knob->read();
+      int32_t apos = knob->read()/2;
       if     (apos < m_min_pos) 
       {
         apos = m_min_pos;
@@ -148,6 +154,14 @@ class EncoderKnopGroup
       if(n>=m_knop_cnt){return;}
       knobs[n]->writeSteps(val);
     }    
+
+    void writeSingle(int32_t val, uint8_t n, bool u){
+      if(n>=m_knop_cnt){return;}
+      knobs[n]->writeSteps(val);
+      if(u){
+        knobs[n]->rst_updated();
+      }
+    }        
 
   private:
     EncoderKnob *knobs[MAX_KNOB_NUMBER];

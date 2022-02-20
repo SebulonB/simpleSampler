@@ -69,7 +69,8 @@ enum GUI_STATES
 };
 
 enum GUI_STATES gui_state = GUI_STATE_SAMP1;
-bool gui_indexing = true;
+static bool gui_indexing = true;
+static bool gui_edit_param = false;
 
 const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
 const char *w_labels[]  = {      "Attack", 
@@ -83,7 +84,7 @@ const char *w_labels[]  = {      "Attack",
                                  "flub(10)"};
 
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-widgetList list(&display, 32, 1, 128-32, 31);
+widgetList list(&display, 32, 0, 128-32, 32);
 
 
 
@@ -100,6 +101,8 @@ void gui_init(void)
 
   pinMode(BUTTON,INPUT_PULLUP);
   pinMode(BUTTON_ENCODER,INPUT_PULLUP);
+  pinMode(knob_pins[0], INPUT_PULLUP);
+  pinMode(knob_pins[1], INPUT_PULLUP);  
   p_knobs = new EncoderKnopGroup(KNOB_CNT, knob_pins);  
 
   w_index.setActive(true);
@@ -118,13 +121,13 @@ void gui_display_bpm(float bpm)
 
 
 
-void gui_change_state(enum UI_KNOBS knob, unsigned int val)
+void gui_change_state(enum UI_KNOBS knob, int32_t val)
 {
-#ifdef GUI_DEBUG
-  char str_[100];
-  sprintf(str_, "gui set state: %d %d\n", (int)knob, val);
-  Serial.print(str_);
-#endif
+// #ifdef GUI_DEBUG
+//   char str_[100];
+//   sprintf(str_, "gui set state: %d %d\n", (int)knob, val);
+//   Serial.print(str_);
+// #endif
 
 if(gui_indexing){
   if(knob == UI_KNOB_ROTARY)
@@ -132,6 +135,10 @@ if(gui_indexing){
     if(val>=GUI_STATE_NUM){
       val = (GUI_STATE_NUM-1);
       p_knobs->writeSingle(val, 0); 
+    }
+    if(val<0){
+       val = 0;
+      p_knobs->writeSingle(val, 0);      
     }
     w_index.setIndex(val);    
     gui_state = (enum GUI_STATES)val;
@@ -144,8 +151,8 @@ if(gui_indexing){
     display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
 
     for(int i=0; i<9; i++){
-      widgetParamFloat *la= new widgetParamFloat (&display, w_labels[i], 60, widgetParamFloat::PERCENT);
-      la->setMax(100);
+      widgetParamFloat *la= new widgetParamFloat (&display, w_labels[i], 58, widgetParamFloat::SECONDS);
+      la->setMax(9000);
       la->setValue(i*10 + 25);
       list.pushWidget(la);
     }
@@ -158,18 +165,33 @@ if(gui_indexing){
 }
 else {
   if(knob == UI_KNOB_ROTARY){
-    if(list.setIndex(val)){    
-      list.forceDraw();
+
+    if(gui_edit_param){
+      widgetParam* w = reinterpret_cast<widgetParam* >(list.getActiveWidget());
+      if(w==NULL){return;}
+      if(val==0){return;}
+      w->incValue((val>0 ? true : false));
+      w->forceDraw();
+      p_knobs->writeSingle(0, 0); 
     }
-    else{
-      uint16_t max = list.getIndexMax();
-      if(max != 0){max-=1;}
-      p_knobs->writeSingle(max, 0); 
+    else
+    {
+      if(val == 0){return;}
+      if(list.incIndex((val>0 ? true : false))){
+        list.forceDraw();
+      }
+      p_knobs->writeSingle(0, 0); 
     }
   }
   else if(knob == UI_KNOB_BUTTON2)
   {
-
+    gui_edit_param = !gui_edit_param;
+    widgetParam* w = reinterpret_cast<widgetParam* >(list.getActiveWidget());
+    if(w!=NULL){
+      w->setEdit(gui_edit_param);
+      p_knobs->writeSingle(0, 0); 
+      w->forceDraw();
+    }
   }
 }
 
@@ -177,66 +199,20 @@ if(knob == UI_KNOB_BUTTON1){
   gui_indexing = true;
   w_index.setActive(true);
   w_index.forceDraw();  
+
+  gui_edit_param = false;
+  widgetParam* w = reinterpret_cast<widgetParam* >(list.getActiveWidget());
+  if(w!=NULL){
+    w->setEdit(gui_edit_param);
+    w->forceDraw();
+  }
+
   list.setActive(false);
   list.forceDraw();
 
 }
 
 
-
-
-
-//  switch(gui_state){
-//   case GUI_STATE_SAMP1:
-//     if()
-
-//   break;
-
-//   case GUI_STATE_SAMP2:
-
-//   break;
-
-//   case GUI_STATE_SAMP3:
-
-//   break;
-
-//   case GUI_STATE_SAMP4:
-
-//   break;
-
-//   case GUI_STATE_SAMP5:
-
-//   break;
-
-//   case GUI_STATE_SAMP6:
-
-//   break;
-
-//   case GUI_STATE_MAIN:
-
-//   break;
-
-//   case GUI_STATE_LFO:
-
-//   break;
-
-//   case GUI_STATE_DELAY:
-
-//   break;
-
-//   case GUI_STATE_REVERB:
-
-//   break;
-
-//   case GUI_STATE_CLOCK:
-
-//   break;
-  
-//   default: 
-//     gui_state = GUI_STATE_SAMP1;
-//   break;
- 
-//  }
 }
 
 
