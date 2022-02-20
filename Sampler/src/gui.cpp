@@ -72,18 +72,18 @@ enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 bool gui_indexing = true;
 
 const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
-const char *w_labels[]  = {"flub(1)", 
-                                 "flub(2)", 
-                                 "flub(3)", 
-                                 "flub(4)", 
-                                 "flub(6)", 
-                                 "flub(7)", 
+const char *w_labels[]  = {      "Attack", 
+                                 "Decay", 
+                                 "Sustain", 
+                                 "Release", 
+                                 "Volume", 
+                                 "Start", 
                                  "flub(8)",  
                                  "flub(9)",
                                  "flub(10)"};
 
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
-widgetList list(&display, 32, 0, 128-32, 32);
+widgetList list(&display, 32, 1, 128-32, 31);
 
 
 
@@ -144,7 +144,9 @@ if(gui_indexing){
     display.fillRect(32, 0, 128-32, 32, SSD1306_BLACK);
 
     for(int i=0; i<9; i++){
-      widgetLabel *la= new widgetLabel(&display, w_labels[i]);
+      widgetParamFloat *la= new widgetParamFloat (&display, w_labels[i], 60, widgetParamFloat::PERCENT);
+      la->setMax(100);
+      la->setValue(i*10 + 25);
       list.pushWidget(la);
     }
 
@@ -164,6 +166,10 @@ else {
       if(max != 0){max-=1;}
       p_knobs->writeSingle(max, 0); 
     }
+  }
+  else if(knob == UI_KNOB_BUTTON2)
+  {
+
   }
 }
 

@@ -14,7 +14,7 @@
 #define DEBUG_WIDGET_INDICATOR 
 #define DEBUG_WIDGET_LABEL
 #define DEBUG_WIDGET_LIST
-
+#define DEBUG_WIDGET_PARAM_FLOAT
 
 
 class widget {
@@ -75,6 +75,7 @@ class widgetLabel : public widget{
     widgetLabel(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t x, uint16_t y);
 
     void setText(const char *label);
+    uint8_t getTextSize(){return m_text_size;}
 
   private:   
     const char * m_label{NULL};
@@ -118,6 +119,53 @@ class widgetList : public widget {
     char str_[100];
 #endif
 
+
+};
+
+class widgetParamFloat : public widget {
+
+  public:
+    enum UNIT{
+      SECONDS,
+      PERCENT
+    };
+
+    widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u);
+    widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t val_x_pos, enum UNIT u);    
+
+    void  setValue(float m){
+      if(m<m_min){ m=m_min;}
+      if(m>m_max){ m=m_max;}
+      m_value = m;
+    }
+    float getValue(void){return m_value;}
+
+    void  setMin(float m){m_min = m;}
+    float getMin(void){return m_min;}
+    
+    void  setMax(float m){m_max = m;}
+    float getMax(void){return m_max;}
+    
+  
+  private:
+    widgetLabel *m_label;
+
+    enum UNIT m_unit{PERCENT};
+    uint16_t  m_val_x_pos{0};
+    uint16_t  m_text_size;
+    bool      m_edit{false};
+
+    float m_min{0.};
+    float m_max{0.};
+    float m_value{0.};
+
+    void init();
+    uint16_t cal_val_str(char* str);
+    void draw();
+
+#ifdef DEBUG_WIDGET_PARAM_FLOAT
+    char str_[100];
+#endif    
 
 };
 

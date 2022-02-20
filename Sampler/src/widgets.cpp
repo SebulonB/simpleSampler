@@ -248,3 +248,81 @@ void widgetList::draw()
     }
   }
 }
+
+
+//------------ widgetList ---------------
+widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u) : 
+                     widget()
+{
+  m_display   = disp;
+  m_val_x_pos = val_x_pos;
+  m_label  = new widgetLabel(disp, label); 
+ 
+  init();
+}
+
+widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t val_x_pos, enum UNIT u) : 
+                     widget()
+{
+  m_display = disp;
+  m_val_x_pos = val_x_pos;
+  m_label = new widgetLabel(disp, label); 
+
+  init();
+}
+
+void widgetParamFloat::init()
+{
+  //ger height from label
+  uint16_t w,h;
+  m_label->getSize(w,h);
+  m_height = h;
+
+  char str[10];
+  cal_val_str(str);
+}
+
+uint16_t widgetParamFloat::cal_val_str(char *str)
+{
+  //generate value string
+  uint16_t l=0;
+  sprintf(str, "%5.1f", m_value);
+  if(m_unit == PERCENT){
+    l = strlen(str);
+    sprintf(str+l, "%%");
+  }
+  l = strlen(str);
+
+  m_text_size = m_label->getTextSize();
+  m_width = 5 * m_text_size * strlen(str) + strlen(str) + 1;
+
+  return l;
+}
+
+void widgetParamFloat::draw()
+{
+
+  m_label->setPos(m_pos_x, m_pos_y);
+
+  //redraw label
+  m_label->setActive(m_active && !m_edit);
+  m_label->forceDraw();
+
+  char str[10];
+  cal_val_str(str);
+  uint16_t x=m_pos_x+m_val_x_pos;
+  
+  if(m_active && m_edit){
+    m_display->fillRect(x, m_pos_y, m_width, m_height, SSD1306_WHITE);
+    m_display->setTextColor(SSD1306_INVERSE);        // Draw white text
+  }
+  else{
+    m_display->fillRect(x, m_pos_y, m_width, m_height, SSD1306_BLACK);
+    m_display->setTextColor(SSD1306_WHITE);        // Draw white text       
+  }  
+
+  m_display->setTextSize(m_text_size);      
+  m_display->setCursor(x, m_pos_y);             // Start at top-left corner
+  m_display->print(str);
+  m_display->display();     
+}
