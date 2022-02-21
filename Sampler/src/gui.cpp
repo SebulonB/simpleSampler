@@ -6,6 +6,7 @@
 #include <Bounce.h>
 #include <vector>
 
+#include "handler.h"
 #include "gui.h"
 #include "widgets.h"
 #include "encoderKnobs.h"
@@ -32,6 +33,10 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT,
 
 
 
+
+
+//--------------- Interface -----------------------
+
 //Buttons and Encoders
 Bounce button_bouncer = Bounce( BUTTON, 20); 
 Bounce button_bouncer_encoder = Bounce( BUTTON_ENCODER , 20); 
@@ -44,8 +49,6 @@ uint8_t knob_pins[2*KNOB_CNT] = {
 };
 EncoderKnopGroup *p_knobs; //      = new EncoderKnopGroup(KNOB_CNT, knob_pins);
 
-
-
 enum UI_KNOBS{
   UI_KNOB_BUTTON1 = 0,
   UI_KNOB_BUTTON2,
@@ -54,6 +57,9 @@ enum UI_KNOBS{
 };
 
 
+
+
+//--------------- GUI INDEXING -----------------------
 //gui elements
 enum GUI_STATES
 {
@@ -69,15 +75,44 @@ enum GUI_STATES
   GUI_STATE_NUM,
 };
 
+
 enum GUI_STATES gui_state = GUI_STATE_SAMP1;
 static bool gui_indexing = true;
 const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'};
 
-
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
+
+
+//--------------- GUI Devices -----------------------
+#define GUI_DEVICE_X_POS   32
+#define GUI_DEVICE_Y_POS   0
+#define GUI_DEVICE_WIDTH   (SCREEN_WIDTH-GUI_DEVICE_X_POS)
+#define GUI_DEVICE_HEIGHT  SCREEN_HEIGHT
 std::vector<guiDeviceSampler *> m_gui_devices;
 
 
+//--------------- Load/Save -----------------------
+patchHandler  configHandler;
+
+static void readHander(){
+  for(auto p : m_gui_devices){
+    p->readHandler(&configHandler);
+  }
+}
+
+static void saveHandler(){
+  for(auto p : m_gui_devices){
+    p->saveHandler(&configHandler);
+  } 
+  configHandler.saveWriteHandler();
+}
+
+
+
+
+
+
+//--------------- GUI Init -----------------------
 void gui_init(void)
 {
    //SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
@@ -95,35 +130,70 @@ void gui_init(void)
   pinMode(knob_pins[1], INPUT_PULLUP);  
   p_knobs = new EncoderKnopGroup(KNOB_CNT, knob_pins);  
 
+  configHandler.init();
+
   w_index.setActive(true);
   w_index.forceDraw();
 
-  //and sampers
-  for(unsigned int i=0; i<6; i++){
-    m_gui_devices.push_back(new guiDeviceSampler(&display, i, 32, 0, 128-32, 32));
-    if(i == w_index.getIndex()){
-      m_gui_devices.at(i)->forceDraw();
-    }
-  }
+
+  //---- | Add GUI Devices |-----
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                F("SAMPLER_1"), 
+                                                GUI_DEVICE_X_POS, 
+                                                GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, 
+                                                GUI_DEVICE_HEIGHT ));
+
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                F("SAMPLER_2"), 
+                                                GUI_DEVICE_X_POS, 
+                                                GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, 
+                                                GUI_DEVICE_HEIGHT ));     
+
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                F("SAMPLER_3"), 
+                                                GUI_DEVICE_X_POS, 
+                                                GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, 
+                                                GUI_DEVICE_HEIGHT ));    
+
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                F("SAMPLER_4"), 
+                                                GUI_DEVICE_X_POS, 
+                                                GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, 
+                                                GUI_DEVICE_HEIGHT ));   
+
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                F("SAMPLER_5"), 
+                                                GUI_DEVICE_X_POS, 
+                                                GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, 
+                                                GUI_DEVICE_HEIGHT ));                                                                                                       
+
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                F("SAMPLER_6"), 
+                                                GUI_DEVICE_X_POS, 
+                                                GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, 
+                                                GUI_DEVICE_HEIGHT ));                                                                                                       
+
+
+  readHander();
+
+
+
 }
 
 
 
-void gui_display_bpm(float bpm)
-{
-}
 
 
 
-
-
+//--------------- GUI Interact -----------------------
 void gui_change_state(enum UI_KNOBS knob, int32_t val)
 {
-// #ifdef GUI_DEBUG
-//   char str_[100];
-//   sprintf(str_, "gui set state: %d %d\n", (int)knob, val);
-//   Serial.print(str_);
-// #endif
 
   if(gui_indexing){
     if(knob == UI_KNOB_ROTARY)
@@ -139,7 +209,7 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
       w_index.setIndex(val);   
       m_gui_devices.at(w_index.getIndex())->setActive(false);
       m_gui_devices.at(w_index.getIndex())->rstIndex(); 
-      m_gui_devices.at(w_index.getIndex())->forceDraw();      
+      m_gui_devices.at(w_index.getIndex())->forceDraw();     
       gui_state = (enum GUI_STATES)val;
     }
     else if(knob == UI_KNOB_BUTTON2){
@@ -181,6 +251,8 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
     m_gui_devices.at(w_index.getIndex())->setEdit(false);
 
     m_gui_devices.at(w_index.getIndex())->forceDraw();
+
+    saveHandler(); 
   }
 }
 
@@ -223,6 +295,15 @@ void gui_state_machine(void)
     }
   }
 }
+
+
+void gui_display_bpm(float bpm)
+{
+}
+
+
+
+
 
 
 

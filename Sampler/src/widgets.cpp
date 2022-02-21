@@ -306,20 +306,23 @@ void widgetParam::incValue(bool inc){
 
 
 //------------ widgetParamFloat ---------------
-widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u) : 
-                     widgetParam()
-{
-  m_display      = disp;
-  m_value_x_pos  = val_x_pos;
-  m_unit         = u;
-  m_widget_type  = widget::PARAM;
-  m_param_type   = FLOAT;
-  m_label        = new widgetLabel(disp, label); 
-  init();
-}
+// widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u) : 
+//                      widgetParam()
+// {
+//   m_display      = disp;
+//   m_value_x_pos  = val_x_pos;
+//   m_unit         = u;
+//   m_widget_type  = widget::PARAM;
+//   m_param_type   = FLOAT;
+//   m_label        = new widgetLabel(disp, label); 
+//   init();
+// }
 
-widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t val_x_pos, enum UNIT u) : 
-                     widgetParam()
+widgetParamFloat::widgetParamFloat( Adafruit_SSD1306 *disp, 
+                      const char *device,
+                      const __FlashStringHelper *label, 
+                      const __FlashStringHelper *param,
+                      uint16_t val_x_pos, enum UNIT u ) : widgetParam()
 {
   m_display      = disp;
   m_value_x_pos  = val_x_pos;
@@ -327,6 +330,8 @@ widgetParamFloat::widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHe
   m_widget_type  = widget::PARAM;  
   m_param_type   = FLOAT;
   m_label        = new widgetLabel(disp, label); 
+  l_device       = device; 
+  l_param        = reinterpret_cast<const char *>(param); 
   init();
 }
 

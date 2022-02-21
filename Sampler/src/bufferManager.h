@@ -5,7 +5,7 @@
 #include <string.h>
 
 
-#define DEBUG_BUFFER_MANAGER
+//#define DEBUG_BUFFER_MANAGER
 
 class bufferManager
 {

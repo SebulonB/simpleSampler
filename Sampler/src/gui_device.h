@@ -2,8 +2,10 @@
 #define GUI_DEVICE_H_
 #include "widgets.h"
 #include <vector>
+#include "handler.h"
 
 //#define DEBUG_GUI_DEVICE_SAMPLER
+#define DEBUG_GUI_DEVICE
 
 
 
@@ -23,22 +25,29 @@ class guiDevice : public widget
     }
     void rstIndex();
 
+    void readHandler(patchHandler *m_handler){read_handler(m_handler);}
+    void saveHandler(patchHandler *m_handler){save_handler(m_handler);}
+
   protected:
     uint16_t m_id{0};
+    const char * l_device{NULL};
 
     bool m_edit{false};
     u_int16_t m_param_y_pos{0};
 
     widgetList *m_param_list{NULL};
     std::vector<widgetParam *> m_params{NULL}; 
-
+    
     void inc_rotary(bool inc);
     void set_edit();
     void draw();
 
-#ifdef DEBUG_GUI_DEVICE_SAMPLER
+    void read_handler(patchHandler *m_handler);
+    void save_handler(patchHandler *m_handler);
+
+#ifdef DEBUG_GUI_DEVICE
     char str_[100];
-#endif
+#endif    
 
 };
 
@@ -52,9 +61,10 @@ class guiDevice : public widget
 class guiDeviceSampler : public guiDevice
 {
   public:
-    guiDeviceSampler( Adafruit_SSD1306 *disp, const uint16_t id,
+    guiDeviceSampler( Adafruit_SSD1306 *disp, 
+                      const __FlashStringHelper *device, 
                       const uint16_t x, const uint16_t y, 
-                      const uint16_t width, const uint16_t height);
+                      const uint16_t width, const uint16_t height) ;
 
 };
 

@@ -25,7 +25,7 @@
 #define EXTMEM_SIZE 4000000
 EXTMEM unsigned int samples_mem[EXTMEM_SIZE]; //4M Words
 bufferManager ramManager(samples_mem, EXTMEM_SIZE);
-patchHandler  configHandler;
+//patchHandler  configHandler;
 
 
 //****************************************************************
@@ -115,7 +115,7 @@ void samplerInit(void)
   delaySecDryWet.gain(1, 0.0);    
 
   //Init handler
-  configHandler.init();   
+  //configHandler.init();   
 
   
   //Fill Buffer
@@ -129,11 +129,11 @@ void samplerInit(void)
   
   
   String param;
-  if(configHandler.getParamValue( "sampler_2",  "file1", param ))
-  {
-    File dataFile = SD.open(param.c_str()); 
-    ramManager.allocate( wav2m(&dataFile, ramManager.getNextPointer() ));
-  }
+  // if(configHandler.getParamValue( "sampler_2",  "file1", param ))
+  // {
+  //   File dataFile = SD.open(param.c_str()); 
+  //   ramManager.allocate( wav2m(&dataFile, ramManager.getNextPointer() ));
+  // }
 
  
 #ifdef DEBUG_SAMPLER  

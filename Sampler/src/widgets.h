@@ -149,12 +149,25 @@ class widgetParam : public widget {
     void setEdit(bool e){m_edit = e;}
     void incValue(bool inc);
 
+    const char * getLDevice(){return l_device;}
+    const char * getLParam(){return l_param;}
+
+    bool isParamType(enum PARAM_TYPE t){
+      return (t == m_param_type) ? true : false;
+    }
+
   protected:
     bool     m_edit{false};  
+    widgetLabel *m_label;
+    
+    const char * l_device{NULL};
+    const char * l_param{NULL};
+    
     uint16_t m_param_width{0};
     uint32_t m_millis_old;
     uint32_t m_millis_diff;
     uint16_t m_millis_diff_shure;
+    
     enum    PARAM_TYPE m_param_type{FLOAT};
 
     virtual void inc_value(bool inc);
@@ -169,12 +182,17 @@ class widgetParamFloat : public widgetParam {
       PERCENT
     };
 
-    widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u);
-    widgetParamFloat(Adafruit_SSD1306 *disp, const __FlashStringHelper *label, uint16_t val_x_pos, enum UNIT u);    
+    //widgetParamFloat(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u);
+    widgetParamFloat( Adafruit_SSD1306 *disp, 
+                      const char *device,
+                      const __FlashStringHelper *label, 
+                      const __FlashStringHelper *param,
+                      uint16_t val_x_pos, enum UNIT u );    
   
     //API
     enum UNIT getUnit(){return m_unit;}
-
+    void  setValueDefault(float m){m_value_default = m;}
+    void  useDefaultVal(){setValue(m_value_default);}
     void  setValue(float m);
     float getValue(void){return m_value;}
     void  setMin(float m){m_min = m;}
@@ -183,11 +201,10 @@ class widgetParamFloat : public widgetParam {
     float getMax(void){return m_max;}
 
   private:
-    widgetLabel *m_label;
-
     float m_min{0.};
     float m_max{0.};
     float m_value{0.};
+    float m_value_default{0.};
 
     enum UNIT m_unit{PERCENT};
     uint16_t  m_value_x_pos{0};
