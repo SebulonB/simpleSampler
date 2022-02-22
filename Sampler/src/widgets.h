@@ -5,10 +5,12 @@
 #include <Adafruit_SSD1306.h>
 #include <String.h>
 
+#include <SD.h>
+
 #include "encoderKnobs.h"
 
 //global strings
-const char str_unknown[] PROGMEM = "unknown0";
+const char str_unknown[] PROGMEM = "unknown";
 
 
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
@@ -125,9 +127,10 @@ class widgetList : public widget {
 
     bool setIndex(u_int16_t index);
     bool incIndex(bool inc);
+
     uint16_t getIndex(void)   {return m_index;};
     uint16_t getIndexMax(void){return m_widgets.size();}
-    widget *getActiveWidget();
+    widget   *getActiveWidget();
 
 
   private:
@@ -249,10 +252,24 @@ class widgetParamBrowser: public widgetParam{
                         uint16_t val_x_pos );  
 
     char *  getValue(){return m_value;}
+    void    setValue(String &m){
+      strcpy(m_value, m.c_str());
+    }
+
+    void    setDir(const __FlashStringHelper *dir){
+      m_dir = reinterpret_cast<const char *>(dir); 
+    }
+    void    setDir(const char * dir)
+    {
+      m_dir = dir;
+    }
 
   private:
     uint16_t m_index{0};
+    uint16_t m_index_old{0};
     char     m_value[MAX_VALUE_STRING_SIZE];
+    const char * m_dir;
+    File     m_folder;
 
     uint16_t  m_value_width{0};
     uint16_t  m_value_width_max{0}; //used to clear txt    

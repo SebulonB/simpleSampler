@@ -77,6 +77,8 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   widgetParamBrowser *param_b = new widgetParamBrowser( m_display, l_device,
                                                         F("Sample"), F("SRC_SampleName"), 
                                                         PARAM_VALUE_POS_BROWSER);
+
+  param_b->setDir(F("/samples"));
   m_params.push_back( param_b  );  
   m_param_list->pushWidget( param_b );   
 
@@ -170,13 +172,21 @@ void guiDevice::read_handler(patchHandler *m_handler)
 
   for(auto pa : m_params){
 
-    if(pa->isParamType(widgetParam::FLOAT)){
+    if       (pa->isParamType(widgetParam::FLOAT)){
       widgetParamFloat *p = reinterpret_cast<widgetParamFloat *>(pa); 
       float val;
       if(!m_handler->getParamValue(p->getLDevice(), p->getLParam(), val)){
         p->useDefaultVal();
       }
       else{
+        p->setValue(val);
+      }
+    }
+
+    else if(pa->isParamType(widgetParam::BROWSER)){
+      widgetParamBrowser * p = reinterpret_cast<widgetParamBrowser *>(pa); 
+      String val;
+      if(m_handler->getParamValue(p->getLDevice(), p->getLParam(), val)){
         p->setValue(val);
       }
     }
@@ -191,10 +201,15 @@ void guiDevice::save_handler(patchHandler *m_handler)
   Serial.print(str_);
 #endif  
 
-  for(auto param : m_params){
-    if(param->isParamType(widgetParam::FLOAT)){
-      widgetParamFloat *p = reinterpret_cast<widgetParamFloat *>(param); 
+  for(auto pa: m_params){
+    if      (pa->isParamType(widgetParam::FLOAT)){
+      widgetParamFloat *p = reinterpret_cast<widgetParamFloat *>(pa); 
       m_handler->saveParamValue(p->getLDevice(), p->getLParam(), p->getValue());
+    }
+    else if(pa->isParamType(widgetParam::BROWSER)){
+      widgetParamBrowser * p = reinterpret_cast<widgetParamBrowser *>(pa); 
+      String val = p->getValue();
+      m_handler->saveParamValue(p->getLDevice(), p->getLParam(), val);
     }
   }  
 }

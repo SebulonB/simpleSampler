@@ -6,6 +6,8 @@
 #include <vector>
 #include <cmath>
 
+#include <SD.h>
+
 #include "widgets.h"
 
 
@@ -552,9 +554,69 @@ void widgetParamBrowser::draw()
 void widgetParamBrowser::browse()
 {
 #ifdef DEBUG_WIDGET_PARAM_BROWSER
-  sprintf(str_, "Inc Browser: Device(%s) Param(%s) Value(%s) Index(%d)\n",
-                l_device, l_param, m_value, m_index);
+  sprintf(str_, "Inc Browser: Device(%s) Param(%s) Value(%s) Index(%d) IndexOld(%d)\n",
+                l_device, l_param, m_value, m_index, m_index_old);
   Serial.print(str_);
 #endif
+
+
+  if(m_index < m_index_old)
+  { 
+    if(m_folder){
+      m_folder.close();
+    }
+  }
+
+  if(!m_folder){    
+    m_folder    = SD.open(m_dir);
+    m_index_old = 0;    
+  }
+
+  //Find File to Index
+  File m_file;
+
+  while(true){
+    m_file = m_folder.openNextFile();
+
+    if(!m_file){
+      m_index = m_index_old;
+      break;
+    }
+
+    if(!m_file.isDirectory())
+    {
+  #ifdef DEBUG_WIDGET_PARAM_BROWSER
+        sprintf( str_, "Browser Open next File(%s) Size(%lld)\n", 
+                m_file.name(), m_file.size());
+        Serial.print(str_);
+  #endif 
+
+      String file_s = m_file.name();   
+
+      //check for unknown files (starting with .   | unix)
+      if(file_s.startsWith('.')){
+        continue;
+      }
+
+      uint16_t len = file_s.lastIndexOf('.');
+      if(len > MAX_VALUE_STRING_SIZE){
+        len = MAX_VALUE_STRING_SIZE;
+      }
+
+      file_s =file_s.toUpperCase();
+
+      //*.wav file?
+      if(!file_s.endsWith("WAV")){
+        continue;
+      }      
+      
+      if(++m_index_old >= m_index){
+        memset(m_value, 0, MAX_VALUE_STRING_SIZE*sizeof(char));
+        memcpy(m_value, m_file.name(), len*sizeof(char));        
+        break;
+      }
+    }
+  }//end while
+
 }
 
