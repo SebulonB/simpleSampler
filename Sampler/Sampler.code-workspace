@@ -7,5 +7,9 @@
 			"path": "../../../TeensyAudio/audioTest"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"sstream": "cpp"
+		}
+	}
 }

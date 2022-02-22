@@ -10,7 +10,6 @@
 #include <ArduinoJson.h>
 
 #include "handler.h"
-#include "audioGlobalLabels.h"
 
 
 //#define FILE_STR "SET1.TXT"
@@ -101,9 +100,7 @@ bool patchHandler::getParamValue(const char *l_device, const char *l_param, Stri
 }
 
 bool patchHandler::saveParamValue(const char *l_device, const char *l_param, float val)
-{
-  if( (strcmp (l_device,error_str) == 0) || strcmp (l_param, error_str) == 0){return false;}
- 
+{ 
   m_doc_write[l_device][l_param] = val;
 
 #ifdef DEBUG_PATCH_HANDLER   
@@ -116,9 +113,6 @@ bool patchHandler::saveParamValue(const char *l_device, const char *l_param, flo
 
 bool patchHandler::saveParamValue(const char *l_device, const char *l_param, String &val)
 {
-
-  if( (strcmp (l_device,error_str) == 0) || strcmp (l_param, error_str) == 0){return false;}
-
   m_doc_write[l_device][l_param] = val;
 
 #ifdef DEBUG_PATCH_HANDLER   

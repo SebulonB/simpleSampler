@@ -10,8 +10,7 @@
 
 
 #define PARAM_VALUE_POS 55
-
-
+#define PARAM_VALUE_POS_BROWSER 45
 
 
 
@@ -73,6 +72,13 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   param_f->setValueDefault(100);  
   m_params.push_back( param_f );  
   m_param_list->pushWidget(param_f); 
+
+
+  widgetParamBrowser *param_b = new widgetParamBrowser( m_display, l_device,
+                                                        F("Sample"), F("SRC_SampleName"), 
+                                                        PARAM_VALUE_POS_BROWSER);
+  m_params.push_back( param_b  );  
+  m_param_list->pushWidget( param_b );   
 
   //push to gui list
   m_param_list->setIndex(0);

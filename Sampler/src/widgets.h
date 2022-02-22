@@ -7,14 +7,20 @@
 
 #include "encoderKnobs.h"
 
-
+//global strings
+const char str_unknown[] PROGMEM = "unknown0";
 
 
 #define WIDGET_INDICATOR_MAX_ENTRIES 20
+
+
 // #define DEBUG_WIDGET_INDICATOR 
 // #define DEBUG_WIDGET_LABEL
 //#define DEBUG_WIDGET_LIST
 // #define DEBUG_WIDGET_PARAM_FLOAT
+#define DEBUG_WIDGET_PARAM_BROWSER
+
+
 
 
 class widget {
@@ -129,6 +135,7 @@ class widgetList : public widget {
 
     uint16_t m_seperator{2};
     uint16_t m_index{0};
+    char     m_value[10];
 
     void draw();
 
@@ -144,6 +151,7 @@ class widgetParam : public widget {
   public:
     enum PARAM_TYPE{
       FLOAT,
+      BROWSER
     };
   
     void setEdit(bool e){m_edit = e;}
@@ -163,7 +171,8 @@ class widgetParam : public widget {
     const char * l_device{NULL};
     const char * l_param{NULL};
     
-    uint16_t m_param_width{0};
+    uint16_t  m_value_x_pos{0};
+
     uint32_t m_millis_old;
     uint32_t m_millis_diff;
     uint16_t m_millis_diff_shure;
@@ -207,7 +216,6 @@ class widgetParamFloat : public widgetParam {
     float m_value_default{0.};
 
     enum UNIT m_unit{PERCENT};
-    uint16_t  m_value_x_pos{0};
     uint16_t  m_value_text_size{0};
 
     uint16_t  m_value_width{0};
@@ -224,6 +232,44 @@ class widgetParamFloat : public widgetParam {
 #endif    
 
 };
+
+
+class widgetParamBrowser: public widgetParam{
+
+  public:
+    enum DEFINES{
+      MAX_BROWSER_VALUES    = 3000,
+      MAX_VALUE_STRING_SIZE = 10,
+    };
+
+    widgetParamBrowser( Adafruit_SSD1306 *disp, 
+                        const char *device,
+                        const __FlashStringHelper *label, 
+                        const __FlashStringHelper *param,
+                        uint16_t val_x_pos );  
+
+    char *  getValue(){return m_value;}
+
+  private:
+    uint16_t m_index{0};
+    char     m_value[MAX_VALUE_STRING_SIZE];
+
+    uint16_t  m_value_width{0};
+    uint16_t  m_value_width_max{0}; //used to clear txt    
+    uint16_t  m_value_text_size{0};    
+
+    void init();
+    void inc_value(bool inc);
+    void draw();
+
+    void browse();
+
+#ifdef DEBUG_WIDGET_PARAM_BROWSER
+    char str_[100];
+#endif    
+    
+};
+
 
 
 #endif /* WIDGETS_H_ */
