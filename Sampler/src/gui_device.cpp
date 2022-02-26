@@ -19,6 +19,7 @@
 //------ guiDeviceSampler -------
 guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp, 
                                     audioEngine * engine,
+                                    enum audioEngine::AUDIO_ENGINE_DEVICES i_engine_sampler,
                                     const __FlashStringHelper *device, 
                                     const uint16_t x, const uint16_t y, 
                                     const uint16_t width, const uint16_t height) : guiDevice()
@@ -57,7 +58,7 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   param_f->setMax(100);
   param_f->setValueDefault(100);
   param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setVolume,
-            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
 
   m_params.push_back( param_f );
@@ -69,7 +70,7 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   param_f->setMax(100);
   param_f->setValueDefault(0);
   param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setStart,
-            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
 
   m_params.push_back( param_f );  
@@ -82,7 +83,7 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   param_f->setMax(100);
   param_f->setValueDefault(100);  
   param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setLength,
-            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
             std::placeholders::_1));
 
   m_params.push_back( param_f );  
@@ -95,7 +96,7 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
 
   param_b->setDir(F("/samples"));
   param_b->setUpdateCallback(std::bind(&audioDeviceSampler::openSample,
-            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
 
 

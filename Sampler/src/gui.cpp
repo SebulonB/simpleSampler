@@ -139,52 +139,40 @@ void gui_init(audioEngine *engine)
 
   //---- | Add GUI Devices |-----
   m_gui_devices.push_back(new guiDeviceSampler( &display, 
-                                                engine,
+                                                engine, audioEngine::DEVICE_SAMPLER_1,
                                                 F("SAMPLER_1"), 
-                                                GUI_DEVICE_X_POS, 
-                                                GUI_DEVICE_Y_POS, 
-                                                GUI_DEVICE_WIDTH, 
-                                                GUI_DEVICE_HEIGHT ));
-
-  m_gui_devices.push_back(new guiDeviceSampler( &display,
-                                                engine, 
-                                                F("SAMPLER_2"), 
-                                                GUI_DEVICE_X_POS, 
-                                                GUI_DEVICE_Y_POS, 
-                                                GUI_DEVICE_WIDTH, 
-                                                GUI_DEVICE_HEIGHT ));     
+                                                GUI_DEVICE_X_POS, GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, GUI_DEVICE_HEIGHT ));
 
   m_gui_devices.push_back(new guiDeviceSampler( &display, 
-                                                engine,                                                
+                                                engine, audioEngine::DEVICE_SAMPLER_2,
+                                                F("SAMPLER_2"), 
+                                                GUI_DEVICE_X_POS, GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, GUI_DEVICE_HEIGHT )); 
+
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                engine, audioEngine::DEVICE_SAMPLER_3,
                                                 F("SAMPLER_3"), 
-                                                GUI_DEVICE_X_POS, 
-                                                GUI_DEVICE_Y_POS, 
-                                                GUI_DEVICE_WIDTH, 
-                                                GUI_DEVICE_HEIGHT ));    
+                                                GUI_DEVICE_X_POS, GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, GUI_DEVICE_HEIGHT ));
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display,
-                                                engine,   
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                engine, audioEngine::DEVICE_SAMPLER_4,
                                                 F("SAMPLER_4"), 
-                                                GUI_DEVICE_X_POS, 
-                                                GUI_DEVICE_Y_POS, 
-                                                GUI_DEVICE_WIDTH, 
-                                                GUI_DEVICE_HEIGHT ));   
+                                                GUI_DEVICE_X_POS, GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, GUI_DEVICE_HEIGHT )); 
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display,
-                                                engine,   
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                engine, audioEngine::DEVICE_SAMPLER_5,
                                                 F("SAMPLER_5"), 
-                                                GUI_DEVICE_X_POS, 
-                                                GUI_DEVICE_Y_POS, 
-                                                GUI_DEVICE_WIDTH, 
-                                                GUI_DEVICE_HEIGHT ));                                                                                                       
+                                                GUI_DEVICE_X_POS, GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, GUI_DEVICE_HEIGHT ));                                                                                                     
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display,
-                                                engine,   
+  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                engine, audioEngine::DEVICE_SAMPLER_6,
                                                 F("SAMPLER_6"), 
-                                                GUI_DEVICE_X_POS, 
-                                                GUI_DEVICE_Y_POS, 
-                                                GUI_DEVICE_WIDTH, 
-                                                GUI_DEVICE_HEIGHT ));                                                                                                       
+                                                GUI_DEVICE_X_POS, GUI_DEVICE_Y_POS, 
+                                                GUI_DEVICE_WIDTH, GUI_DEVICE_HEIGHT ));                                                                                                    
 
 
   readHander();

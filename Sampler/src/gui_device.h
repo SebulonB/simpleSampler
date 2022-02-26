@@ -66,6 +66,7 @@ class guiDeviceSampler : public guiDevice
   public:
     guiDeviceSampler( Adafruit_SSD1306 *disp, 
                       audioEngine * engine,
+                      enum audioEngine::AUDIO_ENGINE_DEVICES i_engine_sampler,
                       const __FlashStringHelper *device, 
                       const uint16_t x, const uint16_t y, 
                       const uint16_t width, const uint16_t height) ;
