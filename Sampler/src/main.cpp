@@ -23,6 +23,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "audio_engine/audio_engine.h"
 #include "sampler.h"
 #include "midi_handler.h"
 #include "device.h"
@@ -54,6 +55,8 @@ uint32_t ui_timer500 = millis();
 USBHost myusb;
 USBHub hub1(myusb);
 MIDIDevice midi_host(myusb);
+
+audioEngine engine;
 
 //****************************************************************
 //                         | INIT |
@@ -99,7 +102,7 @@ void setup() {
   }
   
   delay(1000);
-  gui_init();  
+  gui_init(&engine);  
 
   samplerInit();
   led_init();

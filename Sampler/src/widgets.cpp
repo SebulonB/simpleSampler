@@ -350,6 +350,17 @@ void widgetParamFloat::init()
   m_width = m_value_x_pos + m_value_width;
 }
 
+void widgetParamFloat::setUpdateCallback(std::function <void (float)> funcp)
+{
+  p_udpateEngine_callback = funcp;
+}
+
+void widgetParamFloat::callback()
+{
+  if(p_udpateEngine_callback == nullptr) {return;}
+  p_udpateEngine_callback(m_value);
+}   
+
 void widgetParamFloat::setValue(float m)
 {
   if(m >= m_max){m=m_max;}
@@ -367,6 +378,8 @@ void widgetParamFloat::setValue(float m)
   }
 
   m_value = m;
+
+  callback();
 }
 
 void widgetParamFloat::inc_value(bool inc)
@@ -485,9 +498,30 @@ void widgetParamBrowser::init()
   m_label->getSize(w,h);
   m_height = h;
 
+  memset(m_value, 0, MAX_VALUE_STRING_SIZE*sizeof(char));
   strcpy(m_value, str_unknown);
 
   //m_width;
+}
+
+void widgetParamBrowser::setUpdateCallback(std::function <void (const char *)> funcp)
+{
+  p_udpateEngine_callback = funcp;
+}
+
+void widgetParamBrowser::callback()
+{
+  if(p_udpateEngine_callback == nullptr) {return;}
+  p_udpateEngine_callback(m_value);
+}   
+
+void widgetParamBrowser::set_edit(bool e){
+  m_edit = e;
+
+  if(m_edit == false){
+    //ok load callback
+    callback();
+  }
 }
 
 void widgetParamBrowser::inc_value(bool inc)

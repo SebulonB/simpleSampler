@@ -6,6 +6,7 @@
 #include <Bounce.h>
 #include <vector>
 
+#include "audio_engine/audio_engine.h"
 #include "handler.h"
 #include "gui.h"
 #include "widgets.h"
@@ -113,7 +114,7 @@ static void saveHandler(){
 
 
 //--------------- GUI Init -----------------------
-void gui_init(void)
+void gui_init(audioEngine *engine)
 {
    //SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
   if(!display.begin(SSD1306_SWITCHCAPVCC)) {
@@ -138,13 +139,15 @@ void gui_init(void)
 
   //---- | Add GUI Devices |-----
   m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                engine,
                                                 F("SAMPLER_1"), 
                                                 GUI_DEVICE_X_POS, 
                                                 GUI_DEVICE_Y_POS, 
                                                 GUI_DEVICE_WIDTH, 
                                                 GUI_DEVICE_HEIGHT ));
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+  m_gui_devices.push_back(new guiDeviceSampler( &display,
+                                                engine, 
                                                 F("SAMPLER_2"), 
                                                 GUI_DEVICE_X_POS, 
                                                 GUI_DEVICE_Y_POS, 
@@ -152,27 +155,31 @@ void gui_init(void)
                                                 GUI_DEVICE_HEIGHT ));     
 
   m_gui_devices.push_back(new guiDeviceSampler( &display, 
+                                                engine,                                                
                                                 F("SAMPLER_3"), 
                                                 GUI_DEVICE_X_POS, 
                                                 GUI_DEVICE_Y_POS, 
                                                 GUI_DEVICE_WIDTH, 
                                                 GUI_DEVICE_HEIGHT ));    
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+  m_gui_devices.push_back(new guiDeviceSampler( &display,
+                                                engine,   
                                                 F("SAMPLER_4"), 
                                                 GUI_DEVICE_X_POS, 
                                                 GUI_DEVICE_Y_POS, 
                                                 GUI_DEVICE_WIDTH, 
                                                 GUI_DEVICE_HEIGHT ));   
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+  m_gui_devices.push_back(new guiDeviceSampler( &display,
+                                                engine,   
                                                 F("SAMPLER_5"), 
                                                 GUI_DEVICE_X_POS, 
                                                 GUI_DEVICE_Y_POS, 
                                                 GUI_DEVICE_WIDTH, 
                                                 GUI_DEVICE_HEIGHT ));                                                                                                       
 
-  m_gui_devices.push_back(new guiDeviceSampler( &display, 
+  m_gui_devices.push_back(new guiDeviceSampler( &display,
+                                                engine,   
                                                 F("SAMPLER_6"), 
                                                 GUI_DEVICE_X_POS, 
                                                 GUI_DEVICE_Y_POS, 

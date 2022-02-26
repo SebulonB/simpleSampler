@@ -4,6 +4,9 @@
 #include <vector>
 #include "handler.h"
 
+#include "audio_engine/audio_engine.h"
+
+
 //#define DEBUG_GUI_DEVICE_SAMPLER
 #define DEBUG_GUI_DEVICE
 
@@ -62,6 +65,7 @@ class guiDeviceSampler : public guiDevice
 {
   public:
     guiDeviceSampler( Adafruit_SSD1306 *disp, 
+                      audioEngine * engine,
                       const __FlashStringHelper *device, 
                       const uint16_t x, const uint16_t y, 
                       const uint16_t width, const uint16_t height) ;

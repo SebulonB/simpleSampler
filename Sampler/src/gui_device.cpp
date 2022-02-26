@@ -2,12 +2,14 @@
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+
 #include <String.h>
 #include <vector>
+#include <functional>
 
 #include "widgets.h"
 #include "gui_device.h"
-
+#include "audio_engine/audio_device.h"
 
 #define PARAM_VALUE_POS 55
 #define PARAM_VALUE_POS_BROWSER 45
@@ -16,6 +18,7 @@
 
 //------ guiDeviceSampler -------
 guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp, 
+                                    audioEngine * engine,
                                     const __FlashStringHelper *device, 
                                     const uint16_t x, const uint16_t y, 
                                     const uint16_t width, const uint16_t height) : guiDevice()
@@ -53,6 +56,10 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
                                   m_param_y_pos, widgetParamFloat::PERCENT );
   param_f->setMax(100);
   param_f->setValueDefault(100);
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setVolume,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            std::placeholders::_1));
+
   m_params.push_back( param_f );
   m_param_list->pushWidget(param_f);
 
@@ -61,6 +68,10 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
                                   m_param_y_pos, widgetParamFloat::PERCENT );
   param_f->setMax(100);
   param_f->setValueDefault(0);
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setStart,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            std::placeholders::_1));
+
   m_params.push_back( param_f );  
   m_param_list->pushWidget(param_f);
 
@@ -70,6 +81,10 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
                                   m_param_y_pos, widgetParamFloat::PERCENT );
   param_f->setMax(100);
   param_f->setValueDefault(100);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setLength,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            std::placeholders::_1));
+
   m_params.push_back( param_f );  
   m_param_list->pushWidget(param_f); 
 
@@ -79,6 +94,11 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
                                                         PARAM_VALUE_POS_BROWSER);
 
   param_b->setDir(F("/samples"));
+  param_b->setUpdateCallback(std::bind(&audioDeviceSampler::openSample,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(audioEngine::DEVICE_SAMPLER_1)),
+            std::placeholders::_1));
+
+
   m_params.push_back( param_b  );  
   m_param_list->pushWidget( param_b );   
 

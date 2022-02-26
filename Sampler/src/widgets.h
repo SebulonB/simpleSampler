@@ -3,9 +3,10 @@
 
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
-#include <String.h>
-
 #include <SD.h>
+
+#include <String.h>
+#include <functional>
 
 #include "encoderKnobs.h"
 
@@ -20,7 +21,7 @@ const char str_unknown[] PROGMEM = "unknown";
 // #define DEBUG_WIDGET_LABEL
 //#define DEBUG_WIDGET_LIST
 // #define DEBUG_WIDGET_PARAM_FLOAT
-#define DEBUG_WIDGET_PARAM_BROWSER
+//#define DEBUG_WIDGET_PARAM_BROWSER
 
 
 
@@ -157,7 +158,7 @@ class widgetParam : public widget {
       BROWSER
     };
   
-    void setEdit(bool e){m_edit = e;}
+    void setEdit(bool e){set_edit(e);}
     void incValue(bool inc);
 
     const char * getLDevice(){return l_device;}
@@ -183,6 +184,9 @@ class widgetParam : public widget {
     enum    PARAM_TYPE m_param_type{FLOAT};
 
     virtual void inc_value(bool inc);
+    virtual void set_edit(bool e);
+
+    virtual void callback();
 
 };
 
@@ -202,6 +206,7 @@ class widgetParamFloat : public widgetParam {
                       uint16_t val_x_pos, enum UNIT u );    
   
     //API
+    void  setUpdateCallback(std::function <void (float)> funcp);
     enum UNIT getUnit(){return m_unit;}
     void  setValueDefault(float m){m_value_default = m;}
     void  useDefaultVal(){setValue(m_value_default);}
@@ -224,10 +229,16 @@ class widgetParamFloat : public widgetParam {
     uint16_t  m_value_width{0};
     uint16_t  m_value_width_max{0}; //used to clear txt
 
+    //Input Stream Expansion
+    std::function <void (float val)>p_udpateEngine_callback {nullptr};    
+    void callback();    
+
+    void set_edit(bool e){m_edit = e;}
     void init();
     uint16_t cal_val_str(char* str);
     void inc_value(bool inc);
     void draw();
+
 
 
 #ifdef DEBUG_WIDGET_PARAM_FLOAT
@@ -250,6 +261,8 @@ class widgetParamBrowser: public widgetParam{
                         const __FlashStringHelper *label, 
                         const __FlashStringHelper *param,
                         uint16_t val_x_pos );  
+
+    void  setUpdateCallback(std::function <void (const char*)> funcp);
 
     char *  getValue(){return m_value;}
     void    setValue(String &m){
@@ -275,11 +288,19 @@ class widgetParamBrowser: public widgetParam{
     uint16_t  m_value_width_max{0}; //used to clear txt    
     uint16_t  m_value_text_size{0};    
 
+    //Input Stream Expansion
+    std::function <void (const char *val)>p_udpateEngine_callback {nullptr};    
+    void callback();    
+
+    void set_edit(bool e);
+
     void init();
     void inc_value(bool inc);
     void draw();
 
     void browse();
+    
+
 
 #ifdef DEBUG_WIDGET_PARAM_BROWSER
     char str_[100];
