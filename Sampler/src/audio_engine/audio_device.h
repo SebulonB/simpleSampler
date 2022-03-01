@@ -11,6 +11,12 @@ class audioDevice
       AUDIO_DEVICE_SAMPLER
     }; 
 
+    enum MIDI_BOUNDRY
+    {
+      MIDI_CH_MAX = 16,
+      MIDI_VAL_MAX = 127,
+    };
+
     bool isDeviceType(enum AUDIO_DEVICE_TYPE t){
       return (t == m_device_type ? true : false);
     }

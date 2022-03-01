@@ -512,7 +512,11 @@ void widgetParamBrowser::setUpdateCallback(std::function <void (const char *)> f
 void widgetParamBrowser::callback()
 {
   if(p_udpateEngine_callback == nullptr) {return;}
-  p_udpateEngine_callback(m_value);
+  String s=m_dir;//[1]; //remove '/'
+  s.append('/');
+  s.append(m_value);
+  s.append(F(".wav"));
+  p_udpateEngine_callback(s.c_str());
 }   
 
 void widgetParamBrowser::set_edit(bool e){

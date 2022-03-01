@@ -22,6 +22,7 @@
 
 #include <math.h>
 #include <string.h>
+#include "static_malloc/static_malloc.h"
 
 #include "audio_engine/audio_engine.h"
 #include "sampler.h"
@@ -31,7 +32,7 @@
 #include "clock.h"
 #include "gui.h"
 #include "encoderKnobs.h"
-#include "wav2mem.h"
+
 
 //****************************************************************
 //                           | Config |
@@ -48,6 +49,9 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 //                         | Globals |
 //
 char str_[100];
+constexpr size_t engineSampleHeapSize = 1024 * 8000;
+static EXTMEM uint8_t engineSampleHeap[engineSampleHeapSize];
+
 
 uint32_t ui_timer = millis();
 uint32_t ui_timer500 = millis();
@@ -58,11 +62,17 @@ MIDIDevice midi_host(myusb);
 
 audioEngine engine;
 
+
+
+
 //****************************************************************
 //                         | INIT |
 //
 void setup() {
   Serial.begin(115200);
+
+  //Set audio Engine Heap
+  sm_set_default_pool(engineSampleHeap,  engineSampleHeapSize, 0, nullptr);
 
   //Init Audio
   AudioMemory(512);
@@ -104,7 +114,6 @@ void setup() {
   delay(1000);
   gui_init(&engine);  
 
-  samplerInit();
   led_init();
   clock_init();
 

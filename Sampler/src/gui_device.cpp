@@ -202,6 +202,9 @@ void guiDevice::read_handler(patchHandler *m_handler)
       else{
         p->setValue(val);
       }
+
+      //udate guie
+      p->triggerCallback();
     }
 
     else if(pa->isParamType(widgetParam::BROWSER)){
@@ -210,6 +213,8 @@ void guiDevice::read_handler(patchHandler *m_handler)
       if(m_handler->getParamValue(p->getLDevice(), p->getLParam(), val)){
         p->setValue(val);
       }
+
+      p->triggerCallback();
     }
   }
 }

@@ -163,6 +163,7 @@ class widgetParam : public widget {
 
     const char * getLDevice(){return l_device;}
     const char * getLParam(){return l_param;}
+    void triggerCallback(){callback();}
 
     bool isParamType(enum PARAM_TYPE t){
       return (t == m_param_type) ? true : false;

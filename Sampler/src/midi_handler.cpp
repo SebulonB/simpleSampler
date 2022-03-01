@@ -54,18 +54,6 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   Serial.print(str_);
 #endif
 
-  if(channel == 2)
-  {
-    //play file
-   
-  }
-
-  else if( channel == 3)
-  {
-    //play file
-    playSecMem(note - 52, velocity);
-  }
-  
 }
 
 
