@@ -8,7 +8,7 @@
 
 
 //#define DEBUG_GUI_DEVICE_SAMPLER
-#define DEBUG_GUI_DEVICE
+//#define DEBUG_GUI_DEVICE
 
 
 

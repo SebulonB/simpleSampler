@@ -2,21 +2,25 @@
 #include <math.h>
 #include <string.h>
 
-#include "sampler.h"
+#include "audio_engine/audio_engine.h"
 #include "midi_handler.h"
 #include "clock.h"
 
-#define DEBUG_MIDI
+//#define DEBUG_MIDI
+
+
+audioEngine* m_engine = nullptr;
+
+
+
+void MidiHandlerSetAudioEngine(audioEngine *e)
+{
+  m_engine = e;
+}
 
 //****************************************************************
 //                         | Midi Calbacks |
 //
-
-void myNoteOff(byte channel, byte note, byte velocity) {
-//  sprintf(str_, "Note Off,  ch(%2d) note(%3d) veloctiy(%3d)\n", channel, note, velocity);
-//  Serial.print(str_);
-}
-
 void myControlChange(byte channel, byte control, byte value) {
 //  sprintf(str_, "Control Change,  ch(%2d) control(%3d) value(%3d)\n", channel, control, value);
 //  Serial.print(str_);
@@ -53,6 +57,21 @@ void myNoteOn(byte channel, byte note, byte velocity) {
   sprintf(str_, "Note On,   ch(%2d) note(%3d) veloctiy(%3d)\n", channel, note, velocity);
   Serial.print(str_);
 #endif
+
+  if(m_engine == nullptr){return;}
+  m_engine->midiNoteOn(channel, note, velocity);
+
+}
+
+void myNoteOff(byte channel, byte note, byte velocity) {
+#ifdef DEBUG_MIDI  
+  char str_[100];
+  sprintf(str_, "Note Off,   ch(%2d) note(%3d) veloctiy(%3d)\n", channel, note, velocity);
+  Serial.print(str_);
+#endif
+
+  if(m_engine == nullptr){return;}
+  m_engine->midiNoteOff(channel, note, velocity);
 
 }
 

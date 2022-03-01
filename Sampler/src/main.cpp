@@ -110,6 +110,9 @@ void setup() {
       delay(500);
     }  
   }
+
+  //Midi
+  MidiHandlerSetAudioEngine(&engine);   
   
   delay(1000);
   gui_init(&engine);  

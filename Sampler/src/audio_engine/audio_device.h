@@ -17,6 +17,10 @@ class audioDevice
       MIDI_VAL_MAX = 127,
     };
 
+    //API
+    virtual void midiNoteOn(byte channel, byte note, byte velocity);
+    virtual void midiNoteOff(byte channel, byte note, byte velocity);        
+
     bool isDeviceType(enum AUDIO_DEVICE_TYPE t){
       return (t == m_device_type ? true : false);
     }

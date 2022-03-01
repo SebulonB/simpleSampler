@@ -10,6 +10,20 @@
 #include "audio_device_sampler.h"
 
 
+void audioEngine::midiNoteOn(byte channel, byte note, byte velocity)
+{
+  for(int i=0; i<DEVICE_NUM; i++){
+    m_devices[i]->midiNoteOn(channel, note, velocity);
+  }
+}
+
+void audioEngine::midiNoteOff(byte channel, byte note, byte velocity)
+{
+  for(int i=0; i<DEVICE_NUM; i++){
+    m_devices[i]->midiNoteOff(channel, note, velocity);
+  }
+}
+
 
 audioEngine::audioEngine()
 {

@@ -39,9 +39,12 @@ class audioDeviceSampler : public audioDevice
     void setLength(float v);
 
     //MIDI
-    void setNoteMin(uint8_t m);
-    void setNoteMax(uint8_t m);
-    void setMidiCh(uint8_t m);
+    void setNoteMin(uint8_t m){if(m>MIDI_VAL_MAX){return;} m_note_min=m;}
+    void setNoteMax(uint8_t m){if(m>MIDI_VAL_MAX){return;} m_note_max=m;}
+    void setMidiCh(uint8_t m){if(m>MIDI_CH_MAX){return;} m_midi_ch=m;}
+
+    void midiNoteOn(byte channel, byte note, byte velocity);
+    void midiNoteOff(byte channel, byte note, byte velocity);    
 
   private:
     uint8_t    *m_mem{nullptr};
@@ -50,8 +53,8 @@ class audioDeviceSampler : public audioDevice
     float       m_length{0.0};
 
     uint8_t     m_note_min{0};
-    uint8_t     m_note_max{MIDI_CH_MAX};
-    uint8_t     m_midi_ch{0};
+    uint8_t     m_note_max{MIDI_VAL_MAX};
+    uint8_t     m_midi_ch{1};
 
     //patch
     AudioPlayMemory          *playMem;        //xy=134.75,1329

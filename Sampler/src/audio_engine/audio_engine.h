@@ -26,10 +26,13 @@ class audioEngine
     };
 
     audioEngine();
- 
+    
     //API
     audioDevice *getDevice(enum AUDIO_ENGINE_DEVICES d){return get_device(d);}    
     uint32_t     getRealDeviceCNT(){return (uint32_t)DEVICE_NUM;}
+
+    void midiNoteOn(byte channel, byte note, byte velocity);
+    void midiNoteOff(byte channel, byte note, byte velocity);
 
   private:
     audioDevice * m_devices[DEVICE_NUM];

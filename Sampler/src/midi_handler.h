@@ -15,4 +15,6 @@ void myStart();
 void myContinue(); 
 void myStop();
 
+void MidiHandlerSetAudioEngine(audioEngine *e);
+
 #endif /*MIDI_HANDER_H_*/

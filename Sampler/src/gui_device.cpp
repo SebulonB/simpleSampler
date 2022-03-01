@@ -49,7 +49,8 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   //param list
   m_param_list = new widgetList(m_display, m_pos_x, m_pos_y, m_width, m_height);
 
-  //------------------ | Params | ---------------------- 
+  //-------------------{ Sampler Main }-----------------------
+
   widgetParamFloat *param_f;
 
   param_f = new widgetParamFloat( m_display, l_device, 
@@ -90,6 +91,9 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   m_param_list->pushWidget(param_f); 
 
 
+
+  //-------------------{ Browser }-----------------------
+
   widgetParamBrowser *param_b = new widgetParamBrowser( m_display, l_device,
                                                         F("Sample"), F("SRC_SampleName"), 
                                                         PARAM_VALUE_POS_BROWSER);
@@ -99,9 +103,63 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
 
-
   m_params.push_back( param_b  );  
   m_param_list->pushWidget( param_b );   
+
+
+
+  //-------------------{ Midi }-----------------------
+
+  //CH
+  widgetParamInt *param_i = new widgetParamInt( m_display, l_device,
+                                                F("Midi CH"), F("SRC_MidiCH"), 
+                                                m_param_y_pos );
+
+  param_i->setMax(16);
+  param_i->setMin(1);
+  param_i->setValueDefault((i_engine_sampler+1));
+
+  param_i->setUpdateCallback(std::bind(&audioDeviceSampler::setMidiCh,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_i  );  
+  m_param_list->pushWidget( param_i );   
+
+
+  //Note Min
+  param_i = new widgetParamInt( m_display, l_device,
+                                                F("Note Min"), F("SRC_MidiNoteMin"), 
+                                                m_param_y_pos );
+
+  param_i->setMax(127);
+  param_i->setMin(1);
+  param_i->setValueDefault(1);
+
+  param_i->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_i  );  
+  m_param_list->pushWidget( param_i );   
+
+
+  //Note Max
+  param_i = new widgetParamInt( m_display, l_device,
+                                                F("Note Max"), F("SRC_MidiNoteMax"), 
+                                                m_param_y_pos );
+
+  param_i->setMax(127);
+  param_i->setMin(1);
+  param_i->setValueDefault(127);
+
+  param_i->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMax,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_i  );  
+  m_param_list->pushWidget( param_i );       
+
 
   //push to gui list
   m_param_list->setIndex(0);
@@ -207,6 +265,20 @@ void guiDevice::read_handler(patchHandler *m_handler)
       p->triggerCallback();
     }
 
+    else if (pa->isParamType(widgetParam::INT)){
+      widgetParamInt *p = reinterpret_cast<widgetParamInt *>(pa); 
+      float val;
+      if(!m_handler->getParamValue(p->getLDevice(), p->getLParam(), val)){
+        p->useDefaultVal();
+      }
+      else{
+        p->setValue((int)val);
+      }
+
+      //udate guie
+      p->triggerCallback();
+    }
+
     else if(pa->isParamType(widgetParam::BROWSER)){
       widgetParamBrowser * p = reinterpret_cast<widgetParamBrowser *>(pa); 
       String val;
@@ -232,6 +304,12 @@ void guiDevice::save_handler(patchHandler *m_handler)
       widgetParamFloat *p = reinterpret_cast<widgetParamFloat *>(pa); 
       m_handler->saveParamValue(p->getLDevice(), p->getLParam(), p->getValue());
     }
+
+    else if (pa->isParamType(widgetParam::INT)){
+      widgetParamInt *p = reinterpret_cast<widgetParamInt *>(pa); 
+      m_handler->saveParamValue(p->getLDevice(), p->getLParam(), (float)p->getValue());
+    }
+
     else if(pa->isParamType(widgetParam::BROWSER)){
       widgetParamBrowser * p = reinterpret_cast<widgetParamBrowser *>(pa); 
       String val = p->getValue();

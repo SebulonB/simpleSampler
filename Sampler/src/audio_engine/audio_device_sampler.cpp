@@ -32,7 +32,31 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
 
 }
 
+void audioDeviceSampler::midiNoteOn(byte channel, byte note, byte velocity)
+{
 
+  if(channel != m_midi_ch){return;}
+  if(note < m_note_min || note > m_note_max){return;}
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) noteOn ch(%d) note(%d) vel(%d) min(%d) max(%d)\n", 
+    l_device, channel, note, velocity, m_note_min, m_note_max);
+  Serial.print(str_);
+#endif
+}
+
+void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
+{
+
+  if(channel != m_midi_ch){return;}
+  if(note < m_note_min || note > m_note_max){return;}
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) noteOff ch(%d) note(%d) vel(%d)\n", l_device, channel, note, velocity);
+  Serial.print(str_);
+#endif
+
+}    
 
 void audioDeviceSampler::openSample(const char *s)
 {
