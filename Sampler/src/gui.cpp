@@ -134,6 +134,7 @@ void gui_init(audioEngine *engine)
   configHandler.init();
 
   w_index.setActive(true);
+  w_index.setMax((GUI_STATE_NUM));
   w_index.forceDraw();
 
 
@@ -177,8 +178,11 @@ void gui_init(audioEngine *engine)
 
   readHander();
 
-
-
+  if(w_index.getIndex() < m_gui_devices.size()){  
+    m_gui_devices.at(w_index.getIndex())->setActive(false);
+    m_gui_devices.at(w_index.getIndex())->rstIndex(); 
+    m_gui_devices.at(w_index.getIndex())->forceDraw();   
+  }
 }
 
 
@@ -193,19 +197,23 @@ void gui_change_state(enum UI_KNOBS knob, int32_t val)
   if(gui_indexing){
     if(knob == UI_KNOB_ROTARY)
     {
-      if(val>=GUI_STATE_NUM){
-        val = (GUI_STATE_NUM-1);
-        p_knobs->writeSingle(val, 0); 
+      if(val==0){return;}      
+
+      //Save Index of GUI List
+      uint16_t last_index = 0;
+      if(w_index.getIndex() < m_gui_devices.size()){
+        last_index = m_gui_devices.at(w_index.getIndex())->getIndex();
+      }  
+
+      w_index.incIndex((val>0 ? true : false));
+      if(w_index.getIndex() >= m_gui_devices.size()){return;}   
+
+      for( auto d : m_gui_devices){
+        d->setIndex(last_index);
       }
-      if(val<0){
-        val = 0;
-        p_knobs->writeSingle(val, 0);      
-      }
-      w_index.setIndex(val);   
       m_gui_devices.at(w_index.getIndex())->setActive(false);
-      m_gui_devices.at(w_index.getIndex())->rstIndex(); 
-      m_gui_devices.at(w_index.getIndex())->forceDraw();     
-      gui_state = (enum GUI_STATES)val;
+      m_gui_devices.at(w_index.getIndex())->forceDraw();   
+      p_knobs->writeSingle(0, 0);   
     }
     else if(knob == UI_KNOB_BUTTON2){
       gui_indexing = false;

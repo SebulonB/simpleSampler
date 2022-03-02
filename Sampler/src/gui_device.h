@@ -27,6 +27,14 @@ class guiDevice : public widget
       set_edit();
     }
     void rstIndex();
+    uint16_t getIndex(){
+      if(m_param_list == NULL){return 0;}
+      return m_param_list->getIndex();
+    };
+    void setIndex(uint16_t m){
+      if(m_param_list == NULL){return;}
+      m_param_list->setIndex(m);
+    }
 
     void readHandler(patchHandler *m_handler){read_handler(m_handler);}
     void saveHandler(patchHandler *m_handler){save_handler(m_handler);}

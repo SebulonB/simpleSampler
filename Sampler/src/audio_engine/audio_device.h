@@ -17,6 +17,8 @@ class audioDevice
       MIDI_VAL_MAX = 127,
     };
 
+    virtual AudioStream *getOutputStream(uint8_t audio_ch);
+
     //API
     virtual void midiNoteOn(byte channel, byte note, byte velocity);
     virtual void midiNoteOff(byte channel, byte note, byte velocity);        

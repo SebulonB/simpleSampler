@@ -33,13 +33,33 @@ audioEngine::audioEngine()
   Serial.print(str_);
 #endif
 
+  //I2S Output
+  outMixerCH2 = new AudioMixer4;
+  outMixerCH1 = new AudioMixer4;
+  i2s1        = new AudioOutputI2S;
+  patchCord1  = new AudioConnection(*outMixerCH2, 0, *i2s1, 1);
+  patchCord2  = new AudioConnection(*outMixerCH1, 0, *i2s1, 0);
+  sgtl5000_1  = new AudioControlSGTL5000;
+
+
   //Create Samplers
   m_devices[DEVICE_SAMPLER_1] = new audioDeviceSampler(F("Sampler_1"));
   m_devices[DEVICE_SAMPLER_2] = new audioDeviceSampler(F("Sampler_2"));
   m_devices[DEVICE_SAMPLER_3] = new audioDeviceSampler(F("Sampler_3"));
   m_devices[DEVICE_SAMPLER_4] = new audioDeviceSampler(F("Sampler_4"));
   m_devices[DEVICE_SAMPLER_5] = new audioDeviceSampler(F("Sampler_5"));
-  m_devices[DEVICE_SAMPLER_6] = new audioDeviceSampler(F("Sampler_6"));      
+  m_devices[DEVICE_SAMPLER_6] = new audioDeviceSampler(F("Sampler_6"));
+
+  for(int i=0; i<4; i++){
+    m_out_connections.push_back(new AudioConnection(
+      *m_devices[(DEVICE_SAMPLER_1+i)]->getOutputStream(0), 0, *outMixerCH2, i ));
+    m_out_connections.push_back(new AudioConnection(
+      *m_devices[(DEVICE_SAMPLER_1+i)]->getOutputStream(1), 0, *outMixerCH1, i ));        
+  }   
+
+  sgtl5000_1->enable();  //enable Audio Shield
+  sgtl5000_1->volume(0.65);
+  sgtl5000_1->lineOutLevel(14); //set 2.98V pp       
 
 }
 

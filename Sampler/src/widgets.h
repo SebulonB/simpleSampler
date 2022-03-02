@@ -72,8 +72,10 @@ class widgetIndicator : public widget{
     widgetIndicator(Adafruit_SSD1306 *disp, const char *l, unsigned int max);
     ~widgetIndicator(){};
 
-    void setIndex(unsigned int x);
+    bool setIndex(unsigned int x);
     unsigned int getIndex(){return m_index;}
+    bool incIndex(bool inc);
+    void setMax(unsigned int m){m_max = m;}
 
   private:
     char m_index_list[WIDGET_INDICATOR_MAX_ENTRIES];

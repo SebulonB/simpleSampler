@@ -12,10 +12,14 @@
 
 /*
 // GUItool: begin automatically generated code
-AudioPlayMemory          playMem;       //xy=134.75,1329
-AudioMixer4              outMixer;         //xy=356.5898132324219,1348.974365234375
-AudioOutputI2S           i2s1;           //xy=658.8833312988281,1420.8833312988281
-AudioConnection          patchCord1(playMem, 0, outMixer, 0);
+AudioPlayMemory          playMem;        //xy=625.7406463623047,438.8889331817627
+AudioEffectEnvelope      envelope;      //xy=793.3332824707031,437.7777500152588
+AudioMixer4              outMixerCH2;         //xy=1023.3331756591797,541.1110954284668
+AudioMixer4              outMixerCH1;       //xy=1046.6296768188477,384.55560302734375
+AudioOutputI2S           i2s1;           //xy=1260.8518295288086,475.44446182250977
+AudioConnection          patchCord1(playMem, envelope);
+AudioConnection          patchCord2(envelope, 0, outMixerCH1, 0);
+AudioConnection          patchCord3(envelope, 0, outMixerCH2, 0);
 // GUItool: end automatically generated code
 */
 
@@ -27,7 +31,11 @@ class audioDeviceSampler : public audioDevice
 {
   public:
     audioDeviceSampler(const __FlashStringHelper *device);
-    AudioStream *getAudioConnectionOut(){return outMixer;}
+    AudioStream *getOutputStream(uint8_t audio_ch){
+      if(audio_ch == 0){return outMixerCH1;}
+      else             {return outMixerCH2;}
+    }
+
 
     //------{ API }---------
 
@@ -37,6 +45,13 @@ class audioDeviceSampler : public audioDevice
     void setVolume(float v);
     void setStart(float v);
     void setLength(float v);
+
+    void setAttack(float v);
+    void setHold(float v);
+    void setDecay(float v);
+    void setSustain(float v);
+    void setRelease(float v);    
+
 
     //MIDI
     void setNoteMin(uint8_t m){if(m>MIDI_VAL_MAX){return;} m_note_min=m;}
@@ -48,21 +63,19 @@ class audioDeviceSampler : public audioDevice
 
   private:
     uint8_t    *m_mem{nullptr};
-    float       m_volume{0.0};
-    float       m_start{0.0};
-    float       m_length{0.0};
 
     uint8_t     m_note_min{0};
     uint8_t     m_note_max{MIDI_VAL_MAX};
     uint8_t     m_midi_ch{1};
 
     //patch
-    AudioPlayMemory          *playMem;        //xy=134.75,1329
-    AudioMixer4              *outMixer;       //xy=356.5898132324219,1348.974365234375
-    AudioConnection          *patchCord1;     //(playMem, 0, outMixer, 0);
- 
-
-
+    AudioPlayMemory          *playMem;  
+    AudioEffectEnvelope      *envelope;            
+    AudioMixer4              *outMixerCH1;   
+    AudioMixer4              *outMixerCH2;          
+    AudioConnection          *patchCord1;     
+    AudioConnection          *patchCord2;      
+    AudioConnection          *patchCord3; 
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
     char str_[100];

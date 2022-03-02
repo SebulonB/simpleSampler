@@ -20,10 +20,20 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
   l_device = reinterpret_cast<const char *>(device); 
   m_device_type = AUDIO_DEVICE_SAMPLER;
   //patch
-  playMem    = new  AudioPlayMemory();        
-  outMixer   = new  AudioMixer4();       
-  patchCord1 = new  AudioConnection( *playMem, 0, *outMixer, 0);      
+  playMem      = new  AudioPlayMemory();      
+  envelope     = new  AudioEffectEnvelope();
+  outMixerCH2  = new  AudioMixer4();  
+  outMixerCH1  = new  AudioMixer4();  
+  patchCord1   = new  AudioConnection( *playMem,  0, *envelope, 0);  
+  patchCord2   = new  AudioConnection( *envelope, 0, *outMixerCH2, 0);    
+  patchCord3   = new  AudioConnection( *envelope, 0, *outMixerCH1, 0);   
 
+
+  //init
+  envelope->delay(0);
+  envelope->sustain(1.0);
+  //envelope->release(0.0);
+  //envelope->releaseNoteOn(0);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Indit Audio Device Sampler (%s)\n", l_device);
@@ -37,12 +47,23 @@ void audioDeviceSampler::midiNoteOn(byte channel, byte note, byte velocity)
 
   if(channel != m_midi_ch){return;}
   if(note < m_note_min || note > m_note_max){return;}
+  if(m_mem == NULL){return;}
+
+  AudioNoInterrupts(); 
+  unsigned int * p = (unsigned int *)m_mem;  
+  //envelope->releaseNoteOn(5);  
+  envelope->noteOn();
+  playMem->play(p); 
+  AudioInterrupts();
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) noteOn ch(%d) note(%d) vel(%d) min(%d) max(%d)\n", 
-    l_device, channel, note, velocity, m_note_min, m_note_max);
+  sprintf(str_, "Sampler(%s) noteOn ch(%d) note(%d) vel(%d) min(%d) max(%d) mem(%p)\n", 
+    l_device, channel, note, velocity, m_note_min, m_note_max, p);
   Serial.print(str_);
 #endif
+
+
+
 }
 
 void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
@@ -51,10 +72,19 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
   if(channel != m_midi_ch){return;}
   if(note < m_note_min || note > m_note_max){return;}
 
+  if(m_mem == NULL){return;}
+
+  AudioNoInterrupts();  
+  envelope->noteOff();  
+  //playMem->stop(); 
+  AudioInterrupts(); 
+
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) noteOff ch(%d) note(%d) vel(%d)\n", l_device, channel, note, velocity);
+  sprintf(str_, "Sampler(%s) noteOff ch(%d) note(%d) vel(%d)\n", 
+    l_device, channel, note, velocity);
   Serial.print(str_);
 #endif
+
 
 }    
 
@@ -67,14 +97,17 @@ void audioDeviceSampler::openSample(const char *s)
   if(m_mem != NULL){
     sm_free(m_mem);
   }
+
   m_mem = (uint8_t *)sm_malloc(dataFile.size());  
+
+  if(m_mem == NULL){return;}
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) openSample(%s) size(%lld) p_mem(%p)\n", l_device, s, dataFile.size(), m_mem);
   Serial.print(str_);
 #endif
 
-wav2m(&dataFile, (unsigned int *)m_mem);
+ wav2m(&dataFile, (unsigned int *)m_mem);
 
 
 }
@@ -86,6 +119,12 @@ void audioDeviceSampler::setVolume(float v)
   sprintf(str_, "Sampler(%s) setVolume(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif
+
+  for(int i=0; i<4; i++){
+    outMixerCH2->gain(i, v/100.);
+    outMixerCH1->gain(i, v/100.);
+  }
+
 }
 
 void audioDeviceSampler::setStart(float v)
@@ -106,4 +145,65 @@ void audioDeviceSampler::setLength(float v)
 #endif
 }
 
+
+void audioDeviceSampler::setAttack(float v)
+{
+  AudioNoInterrupts();  
+  envelope->attack(v);
+  AudioInterrupts(); 
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setAttack(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif
+}
+
+void audioDeviceSampler::setHold(float v)
+{
+  AudioNoInterrupts();  
+  envelope->hold(v);
+  AudioInterrupts(); 
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setHold(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif
+
+}
+
+void audioDeviceSampler::setDecay(float v)
+{
+  AudioNoInterrupts();  
+  envelope->decay(v);
+  AudioInterrupts(); 
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setDecay(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif  
+}
+
+void audioDeviceSampler::setSustain(float v)
+{
+  AudioNoInterrupts();  
+  envelope->sustain(v/100.);
+  AudioInterrupts(); 
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setSustain(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif  
+}
+
+void audioDeviceSampler::setRelease(float v)
+{
+  AudioNoInterrupts();  
+  envelope->release(v);
+  AudioInterrupts(); 
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setRelease(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif  
+}
 

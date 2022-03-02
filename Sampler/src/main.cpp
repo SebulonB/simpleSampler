@@ -25,7 +25,6 @@
 #include "static_malloc/static_malloc.h"
 
 #include "audio_engine/audio_engine.h"
-#include "sampler.h"
 #include "midi_handler.h"
 #include "device.h"
 #include "led.h"

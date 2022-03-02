@@ -52,10 +52,31 @@ widgetIndicator::widgetIndicator(Adafruit_SSD1306 *disp, const char *l, unsigned
 };
 
 
-void widgetIndicator::setIndex(unsigned int x){
-  if(x > WIDGET_INDICATOR_MAX_ENTRIES){x = WIDGET_INDICATOR_MAX_ENTRIES;}   
+bool widgetIndicator::setIndex(unsigned int x){
+  if(x >= WIDGET_INDICATOR_MAX_ENTRIES){return false;}   
+  if(x >= m_max){return false;}   
   m_index = x;
   draw();
+  return true;
+}
+
+bool widgetIndicator::incIndex(bool inc)
+{
+  unsigned int index = m_index;
+
+  Serial.println("Inc Index ");
+  Serial.print(index);
+  Serial.println("\n");
+
+  if(inc){
+    index+=1;
+  }
+  else{
+    index-=1;
+  }
+  
+  return setIndex(index);  
+
 }
 
 
