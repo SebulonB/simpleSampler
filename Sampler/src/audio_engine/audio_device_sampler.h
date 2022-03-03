@@ -24,7 +24,7 @@ AudioConnection          patchCord3(envelope, 0, outMixerCH2, 0);
 */
 
 
-#define DEBUG_AUDIO_DEVICE_SAMPLER
+//#define DEBUG_AUDIO_DEVICE_SAMPLER
 
 
 class audioDeviceSampler : public audioDevice

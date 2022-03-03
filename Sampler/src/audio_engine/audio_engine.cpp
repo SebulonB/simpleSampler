@@ -7,6 +7,7 @@
 
 #include "audio_engine.h"
 #include "audio_device.h"
+#include "audioDeviceHelpers.h"
 #include "audio_device_sampler.h"
 
 
@@ -34,8 +35,8 @@ audioEngine::audioEngine()
 #endif
 
   //I2S Output
-  outMixerCH2 = new AudioMixer4;
-  outMixerCH1 = new AudioMixer4;
+  outMixerCH2 = new audioMixerC(8);
+  outMixerCH1 = new audioMixerC(8);
   i2s1        = new AudioOutputI2S;
   patchCord1  = new AudioConnection(*outMixerCH2, 0, *i2s1, 1);
   patchCord2  = new AudioConnection(*outMixerCH1, 0, *i2s1, 0);
@@ -50,7 +51,7 @@ audioEngine::audioEngine()
   m_devices[DEVICE_SAMPLER_5] = new audioDeviceSampler(F("Sampler_5"));
   m_devices[DEVICE_SAMPLER_6] = new audioDeviceSampler(F("Sampler_6"));
 
-  for(int i=0; i<4; i++){
+  for(int i=0; i<6; i++){
     m_out_connections.push_back(new AudioConnection(
       *m_devices[(DEVICE_SAMPLER_1+i)]->getOutputStream(0), 0, *outMixerCH2, i ));
     m_out_connections.push_back(new AudioConnection(

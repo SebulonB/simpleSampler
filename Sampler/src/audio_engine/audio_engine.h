@@ -4,8 +4,10 @@
 #include <Arduino.h>
 #include <String.h>
 #include <vector>
+#include "audioDeviceHelpers.h"
 #include "audio_device.h"
 #include "audio_device_sampler.h"
+
 
 
 /*
@@ -19,7 +21,7 @@ AudioControlSGTL5000     sgtl5000_1;     //xy=826.2166061401367,606.216823577880
 // GUItool: end automatically generated code
 */
 
-#define DEBUG_AUDIO_ENGINE
+//#define DEBUG_AUDIO_ENGINE
 
 
 class audioEngine
@@ -52,8 +54,8 @@ class audioEngine
   
 
     //audio Engine --Main--
-    AudioMixer4              *outMixerCH2;    //xy=915.6480178833008,516.7592353820801
-    AudioMixer4              *outMixerCH1;    //xy=919.9233093261719,425.08539962768555
+    audioMixerC              *outMixerCH2;    //xy=915.6480178833008,516.7592353820801
+    audioMixerC              *outMixerCH1;    //xy=919.9233093261719,425.08539962768555
     AudioOutputI2S           *i2s1;           //xy=1228.8834228515625,455.8832702636719
     AudioConnection          *patchCord1;     //(outMixerCH2, 0, i2s1, 1);
     AudioConnection          *patchCord2;     //(outMixerCH1, 0, i2s1, 0);
