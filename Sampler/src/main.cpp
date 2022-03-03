@@ -22,7 +22,6 @@
 
 #include <math.h>
 #include <string.h>
-#include "static_malloc/static_malloc.h"
 
 #include "audio_engine/audio_engine.h"
 #include "midi_handler.h"
@@ -31,6 +30,7 @@
 #include "clock.h"
 #include "gui.h"
 #include "encoderKnobs.h"
+#include "tinyalloc/tinyalloc.h"
 
 
 //****************************************************************
@@ -47,9 +47,9 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 //****************************************************************
 //                         | Globals |
 //
-char str_[100];
-constexpr size_t engineSampleHeapSize = 1024 * 8000;
-static EXTMEM uint8_t engineSampleHeap[engineSampleHeapSize];
+// char str_[100];
+// constexpr size_t engineSampleHeapSize = 1024 * 8000;
+// static EXTMEM uint8_t engineSampleHeap[engineSampleHeapSize];
 
 
 uint32_t ui_timer = millis();
@@ -62,6 +62,22 @@ MIDIDevice midi_host(myusb);
 audioEngine engine;
 
 
+//****************************************************************
+//                       | External RAM |
+//
+EXTMEM uint8_t ext_ram[1]; //Just to get EXTMEM pointer
+extern uint8_t external_psram_size; //in MB. Set in startup.c
+
+void init_memory()
+{
+    uint32_t psram_bytes = 1024 * 1024 * external_psram_size;
+    ta_init((void *)(ext_ram),               //Base of heap
+            (void *)(ext_ram + psram_bytes), //End of heap
+            psram_bytes / 32768,             //Number of memory chunks (32k/per chunk)
+            16,                              //Smaller chunks than this won't split
+            32);                             //32 word size alignment
+}
+
 
 
 //****************************************************************
@@ -70,12 +86,9 @@ audioEngine engine;
 void setup() {
   Serial.begin(115200);
 
-  //Set audio Engine Heap
-  sm_set_default_pool(engineSampleHeap,  engineSampleHeapSize, 0, nullptr);
-
   //Init Audio
   AudioMemory(512);
-
+  
   //Init Midi USB
   usbMIDI.setHandleNoteOn(myNoteOn);
   usbMIDI.setHandleNoteOff(myNoteOff);
@@ -109,6 +122,9 @@ void setup() {
       delay(500);
     }  
   }
+  
+  //
+  init_memory();
 
   //Midi
   MidiHandlerSetAudioEngine(&engine);   

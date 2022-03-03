@@ -5,10 +5,9 @@
 #include <SerialFlash.h>
 #include <MIDI.h>
 
-#include "static_malloc/static_malloc.h"
 #include "audio_device.h"
 #include "audio_device_sampler.h"
-
+#include "tinyalloc/tinyalloc.h"
 
 
 
@@ -24,9 +23,9 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
   envelope     = new  AudioEffectEnvelope();
   outMixerCH2  = new  AudioMixer4();  
   outMixerCH1  = new  AudioMixer4();  
-  patchCord1   = new  AudioConnection( *playMem,  0, *envelope, 0);  
-  patchCord2   = new  AudioConnection( *envelope, 0, *outMixerCH2, 0);    
-  patchCord3   = new  AudioConnection( *envelope, 0, *outMixerCH1, 0);   
+  //patchCord1   = new  AudioConnection( *playMem,  0, *envelope, 0);  
+  patchCord2   = new  AudioConnection( *playMem, 0, *outMixerCH2, 0);    
+  patchCord3   = new  AudioConnection( *playMem, 0, *outMixerCH1, 0);   
 
 
   //init
@@ -76,7 +75,7 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
 
   AudioNoInterrupts();  
   envelope->noteOff();  
-  //playMem->stop(); 
+  playMem->stop(); 
   AudioInterrupts(); 
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
@@ -90,25 +89,26 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
 
 void audioDeviceSampler::openSample(const char *s)
 {
-
   if(s == nullptr || s == NULL){return;}
 
   File dataFile = SD.open(s); 
-  if(m_mem != NULL){
-    sm_free(m_mem);
+  if(m_mem != NULL){  
+    ta_free(m_mem);//((void *)m_mem);// sm_free(m_mem);
+    m_mem = NULL;
   }
-
-  m_mem = (uint8_t *)sm_malloc(dataFile.size());  
-
+  //get multible of 32
+  uint32_t size = 1024*1024*2;//(uint32_t)((dataFile.size()/1024 +1) * 1024);
+  m_mem = (uint8_t *)ta_alloc(dataFile.size());//extmem_malloc(size);//sm_malloc(dataFile.size());  
   if(m_mem == NULL){return;}
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) openSample(%s) size(%lld) p_mem(%p)\n", l_device, s, dataFile.size(), m_mem);
+  sprintf(str_, "Sampler(%s) openSample(%s) size(%ld) p_mem(%p)\n", l_device, s, size, m_mem);
   Serial.print(str_);
 #endif
 
  wav2m(&dataFile, (unsigned int *)m_mem);
-
+ 
+ dataFile.close();
 
 }
 

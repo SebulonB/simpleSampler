@@ -62,7 +62,7 @@ class audioDeviceSampler : public audioDevice
     void midiNoteOff(byte channel, byte note, byte velocity);    
 
   private:
-    uint8_t    *m_mem{nullptr};
+    uint8_t *m_mem{NULL};
 
     uint8_t     m_note_min{0};
     uint8_t     m_note_max{MIDI_VAL_MAX};

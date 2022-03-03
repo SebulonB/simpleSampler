@@ -64,10 +64,6 @@ bool widgetIndicator::incIndex(bool inc)
 {
   unsigned int index = m_index;
 
-  Serial.println("Inc Index ");
-  Serial.print(index);
-  Serial.println("\n");
-
   if(inc){
     index+=1;
   }
