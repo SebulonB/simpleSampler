@@ -163,6 +163,33 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   //m_param_list->pushWidget(param_f); 
 
 
+  //-------------------{ Channel Vol }-----------------------
+  //CH 1
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Vol_ch1"), F("SRC_Vol_ch1"), 
+                                  m_param_y_pos, widgetParamFloat::PERCENT );
+  param_f->setMax(100);
+  param_f->setValueDefault(100);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setVolCH1,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
+
+  //CH 2
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Vol_ch2"), F("SRC_Vol_ch2"), 
+                                  m_param_y_pos, widgetParamFloat::PERCENT );
+  param_f->setMax(100);
+  param_f->setValueDefault(100);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setVolCH2,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
+
 
   //-------------------{ Browser }-----------------------
 

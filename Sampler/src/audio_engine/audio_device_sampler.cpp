@@ -93,12 +93,11 @@ void audioDeviceSampler::openSample(const char *s)
 
   File dataFile = SD.open(s); 
   if(m_mem != NULL){  
-    ta_free(m_mem);//((void *)m_mem);// sm_free(m_mem);
+    ta_free(m_mem);
     m_mem = NULL;
   }
   //get multible of 32
-  uint32_t size = 1024*1024*2;//(uint32_t)((dataFile.size()/1024 +1) * 1024);
-  m_mem = (uint8_t *)ta_alloc(dataFile.size());//extmem_malloc(size);//sm_malloc(dataFile.size());  
+  m_mem = (uint8_t *)ta_alloc(dataFile.size());
   if(m_mem == NULL){return;}
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
@@ -112,6 +111,18 @@ void audioDeviceSampler::openSample(const char *s)
 
 }
 
+void audioDeviceSampler::set_volume()
+{
+  float v1 = m_ch1_vol * m_master_vol;
+  float v2 = m_ch2_vol * m_master_vol;
+
+  for(int i=0; i<4; i++){
+    outMixerCH2->gain(i, v1);
+    outMixerCH1->gain(i, v2);
+  }
+
+}
+
 void audioDeviceSampler::setVolume(float v)
 {
 
@@ -120,11 +131,34 @@ void audioDeviceSampler::setVolume(float v)
   Serial.print(str_);
 #endif
 
-  for(int i=0; i<4; i++){
-    outMixerCH2->gain(i, v/100.);
-    outMixerCH1->gain(i, v/100.);
-  }
+  //normalize
+  m_master_vol = v/100.;
+  set_volume();
+}
 
+void audioDeviceSampler::setVolCH1(float v)
+{
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setVolCh1(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif
+  //normalize
+  m_ch1_vol = v/100.;
+  set_volume();
+}
+
+void audioDeviceSampler::setVolCH2(float v)
+{
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setVolCh2(%8.2f)\n", l_device, v);
+  Serial.print(str_);
+#endif
+
+  //normalize
+  m_ch2_vol = v/100.;;
+  set_volume();
 }
 
 void audioDeviceSampler::setStart(float v)

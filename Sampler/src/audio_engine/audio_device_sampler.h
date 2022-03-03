@@ -43,6 +43,9 @@ class audioDeviceSampler : public audioDevice
     void openSample(const char *s);
 
     void setVolume(float v);
+    void setVolCH1(float v);
+    void setVolCH2(float v);
+
     void setStart(float v);
     void setLength(float v);
 
@@ -64,9 +67,15 @@ class audioDeviceSampler : public audioDevice
   private:
     uint8_t *m_mem{NULL};
 
+    float       m_master_vol{0.0};
+    float       m_ch1_vol{0.0};
+    float       m_ch2_vol{0.0};    
+
     uint8_t     m_note_min{0};
     uint8_t     m_note_max{MIDI_VAL_MAX};
     uint8_t     m_midi_ch{1};
+
+    void set_volume();
 
     //patch
     AudioPlayMemory          *playMem;  
