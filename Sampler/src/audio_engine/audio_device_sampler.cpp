@@ -49,6 +49,9 @@ void audioDeviceSampler::midiNoteOn(byte channel, byte note, byte velocity)
   if(m_mem == NULL){return;}
 
   AudioNoInterrupts(); 
+  m_velocity = velocity/127.;
+  set_volume();
+
   unsigned int * p = (unsigned int *)m_mem;  
   //envelope->releaseNoteOn(5);  
   envelope->noteOn();
@@ -116,8 +119,8 @@ void audioDeviceSampler::openSample(const char *s)
 
 void audioDeviceSampler::set_volume()
 {
-  float v1 = m_ch1_vol * m_master_vol;
-  float v2 = m_ch2_vol * m_master_vol;
+  float v1 = m_ch1_vol * m_master_vol * m_velocity;
+  float v2 = m_ch2_vol * m_master_vol * m_velocity;
 
   for(int i=0; i<4; i++){
     outMixerCH2->gain(i, v1);
@@ -167,6 +170,11 @@ void audioDeviceSampler::setVolCH2(float v)
 void audioDeviceSampler::setStart(float v)
 {
 
+  AudioNoInterrupts();  
+  //gui use 100%
+  playMem->setStart(v/100.);
+  AudioInterrupts(); 
+
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setStart(%8.2f)\n", l_device, v);
   Serial.print(str_);
@@ -186,7 +194,8 @@ void audioDeviceSampler::setLength(float v)
 void audioDeviceSampler::setPitch(float v)
 {
   AudioNoInterrupts();  
-  playMem->setPitch(v);
+  //gui use 100%
+  playMem->setPitch(v/100.);
   AudioInterrupts(); 
 }
 

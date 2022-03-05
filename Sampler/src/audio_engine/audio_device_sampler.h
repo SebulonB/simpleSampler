@@ -71,6 +71,7 @@ class audioDeviceSampler : public audioDevice
     uint8_t *m_mem{NULL};
 
     float       m_master_vol{0.0};
+    float       m_velocity{1.0};
     float       m_ch1_vol{0.0};
     float       m_ch2_vol{0.0};    
 

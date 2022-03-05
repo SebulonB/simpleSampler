@@ -34,18 +34,28 @@ class AudioPlayMemoryC : public AudioStream
 {
 public:
 	AudioPlayMemoryC(void) : AudioStream(0, NULL), playing(0) { }
-	void play(const unsigned int *data);
+	virtual void update(void);	
+    
+    //std api
+    void play(const unsigned int *data);
 	void stop(void);
-	bool isPlaying(void) { return playing; }
-    void setPitch(float pitch);
+
+    //getter
 	uint32_t positionMillis(void);
 	uint32_t lengthMillis(void);
-	virtual void update(void);
+	bool isPlaying(void) { return playing; }
+
+    //API
+    void setPitch(float pitch);  
+    void setStart(float m);
+
 private:
 	const unsigned int *beginning;
 	uint32_t length;
 	int16_t prior;
 	volatile uint8_t playing;
+
+    float       m_start{0};    
 
     //
     float head_float{0.0};

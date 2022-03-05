@@ -37,9 +37,13 @@ void AudioPlayMemoryC::play(const unsigned int *data)
 	prior = 0;
 	format = *data++;
 	beginning = data;
-	head_float = 0.0;
+
 	length = format & 0xFFFFFF;
 	playing = format >> 24;
+
+	//set start point      // due to 16bit
+	head_float = ((float)(length/2)*m_start);	
+
 }
 
 void AudioPlayMemoryC::stop(void)
@@ -186,7 +190,7 @@ void AudioPlayMemoryC::update(void)
 	}
 	prior = s0;
 
-	if((uint32_t)(head_float) >= length){
+	if((uint32_t)(head_float) >= length/2){
 		playing = 0;
 	}
 
@@ -259,14 +263,19 @@ uint32_t AudioPlayMemoryC::lengthMillis(void)
 
 void AudioPlayMemoryC::setPitch(float pith)
 {
-    float p = 1.0 + (pith/100.);
+    float p = 1.0 + (pith);
 
 	if     (p <= 0.2){p = 0.2;}
 	else if(p <= 0.2){p = 1.8;}
 
-    char str[43];
-	sprintf(str, "set picht %f\n", p);
-	Serial.print(str);
-
 	pitch = p;	
+}
+
+
+void AudioPlayMemoryC::setStart(float m)
+{
+	if(m <= 0){m = 0;}
+    if(m >= 0.95){m = 0.95;}
+
+	m_start = m;  
 }
