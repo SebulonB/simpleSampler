@@ -10,7 +10,7 @@
 #include "tinyalloc/tinyalloc.h"
 
 
-
+extern uint8_t external_psram_size; //in MB. Set in startup.c
 
 
 audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audioDevice()
@@ -90,6 +90,9 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
 void audioDeviceSampler::openSample(const char *s)
 {
   if(s == nullptr || s == NULL){return;}
+  if(external_psram_size <= 0){
+    return;
+  }
 
   File dataFile = SD.open(s); 
   if(m_mem != NULL){  

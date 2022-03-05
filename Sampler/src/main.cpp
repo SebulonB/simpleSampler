@@ -47,11 +47,7 @@ MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 //****************************************************************
 //                         | Globals |
 //
-// char str_[100];
-// constexpr size_t engineSampleHeapSize = 1024 * 8000;
-// static EXTMEM uint8_t engineSampleHeap[engineSampleHeapSize];
-
-
+char str_[100];
 uint32_t ui_timer = millis();
 uint32_t ui_timer500 = millis();
 
@@ -71,8 +67,15 @@ extern uint8_t external_psram_size; //in MB. Set in startup.c
 void init_memory()
 {
     uint32_t psram_bytes = 1024 * 1024 * external_psram_size;
-    ta_init((void *)(ext_ram),               //Base of heap
-            (void *)(ext_ram + psram_bytes), //End of heap
+    void * m = (void *)(ext_ram);
+    
+    if(psram_bytes <= 0){
+      psram_bytes = 1024*128; //128 kb
+      m = (void *)malloc(psram_bytes);
+    }
+
+    ta_init((void *)(m),               //Base of heap
+            (void *)(m + psram_bytes), //End of heap
             psram_bytes / 32768,             //Number of memory chunks (32k/per chunk)
             16,                              //Smaller chunks than this won't split
             32);                             //32 word size alignment
