@@ -21,7 +21,9 @@
 #include "USBHost_t36.h"
 
 #include <math.h>
-#include <string.h>
+#include <string>
+#include <list>
+#include <algorithm>
 
 #include "audio_engine/audio_engine.h"
 #include "midi_handler.h"
@@ -67,11 +69,11 @@ extern uint8_t external_psram_size; //in MB. Set in startup.c
 void init_memory()
 {
     uint32_t psram_bytes = 1024 * 1024 * external_psram_size;
-    void * m = (void *)(ext_ram);
+    uint8_t * m = ext_ram;
     
     if(psram_bytes <= 0){
       psram_bytes = 1024*128; //128 kb
-      m = (void *)malloc(psram_bytes);
+      m = (uint8_t *)malloc(psram_bytes);     
     }
 
     ta_init((void *)(m),               //Base of heap
@@ -80,6 +82,37 @@ void init_memory()
             16,                              //Smaller chunks than this won't split
             32);                             //32 word size alignment
 }
+
+
+// void print_sd_list(void)
+// {
+//   std::list<std::string *>str_list;
+
+//   uint8_t *mem_p = NULL;// (uint8_t *)malloc(1024 * 20);
+
+//   mem_p = (uint8_t *)malloc(20);
+//   str_list.push_back(new(mem_p) std::string("d Hallo \n"));
+
+
+//   mem_p = (uint8_t *)malloc(20);
+//   str_list.push_back(new(mem_p) std::string("x Hallo\n"));
+
+//   mem_p = (uint8_t *)malloc(20);
+//   str_list.push_back(new(mem_p) std::string("a Hallo\n"));
+
+//   str_list.sort();
+
+//   while(1){
+//     for( auto s : str_list)
+//     {
+//       Serial.print(s->c_str());
+//     }    
+//     delay(1000);
+//   }
+
+ 
+// }
+
 
 
 
@@ -138,7 +171,6 @@ void setup() {
   led_init();
   clock_init();
 
-
 }
 
 
@@ -165,8 +197,9 @@ void loop() {
   //500ms 
   if(millis() >= ui_timer500){
     ui_timer500 = millis() + 500;
-
   }
 
 
 }
+
+

@@ -191,6 +191,23 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   m_param_list->pushWidget(param_f); 
 
 
+  //-------------------{ Player Param }-----------------------
+  //Pitch
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Pitch"), F("SRC_Pitch"), 
+                                  m_param_y_pos, widgetParamFloat::PERCENT );
+  param_f->setMax(80.0);
+  param_f->setMin(-80.0);  
+  param_f->setValueDefault(0);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setPitch,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
+
+
+
   //-------------------{ Browser }-----------------------
 
   widgetParamBrowser *param_b = new widgetParamBrowser( m_display, l_device,

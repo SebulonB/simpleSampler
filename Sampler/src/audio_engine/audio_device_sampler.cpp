@@ -19,7 +19,7 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
   l_device = reinterpret_cast<const char *>(device); 
   m_device_type = AUDIO_DEVICE_SAMPLER;
   //patch
-  playMem      = new  AudioPlayMemory();      
+  playMem      = new  AudioPlayMemoryC();      
   envelope     = new  AudioEffectEnvelope();
   outMixerCH2  = new  AudioMixer4();  
   outMixerCH1  = new  AudioMixer4();  
@@ -183,6 +183,15 @@ void audioDeviceSampler::setLength(float v)
 }
 
 
+void audioDeviceSampler::setPitch(float v)
+{
+  AudioNoInterrupts();  
+  playMem->setPitch(v);
+  AudioInterrupts(); 
+}
+
+
+
 void audioDeviceSampler::setAttack(float v)
 {
   AudioNoInterrupts();  
@@ -243,4 +252,5 @@ void audioDeviceSampler::setRelease(float v)
   Serial.print(str_);
 #endif  
 }
+
 

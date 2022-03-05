@@ -8,6 +8,7 @@
 
 #include "audio_device.h"
 #include "wav2mem.h"
+#include "playMemC.h"
 
 
 /*
@@ -55,6 +56,8 @@ class audioDeviceSampler : public audioDevice
     void setSustain(float v);
     void setRelease(float v);    
 
+    void setPitch(float v);
+
 
     //MIDI
     void setNoteMin(uint8_t m){if(m>MIDI_VAL_MAX){return;} m_note_min=m;}
@@ -78,7 +81,7 @@ class audioDeviceSampler : public audioDevice
     void set_volume();
 
     //patch
-    AudioPlayMemory          *playMem;  
+    AudioPlayMemoryC         *playMem;  
     AudioEffectEnvelope      *envelope;            
     AudioMixer4              *outMixerCH1;   
     AudioMixer4              *outMixerCH2;          
