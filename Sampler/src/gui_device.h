@@ -1,7 +1,8 @@
 #ifndef GUI_DEVICE_H_
 #define GUI_DEVICE_H_
-#include "widgets.h"
+
 #include <vector>
+#include "widgets/widgets.h"
 #include "handler.h"
 
 #include "audio_engine/audio_engine.h"

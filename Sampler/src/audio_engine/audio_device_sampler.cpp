@@ -86,9 +86,21 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
     l_device, channel, note, velocity);
   Serial.print(str_);
 #endif
-
-
 }    
+
+
+void audioDeviceSampler::midiCC(byte channel, byte control, byte value)
+{
+
+  if(channel != m_midi_ch){return;}
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) midiCC ch(%d) note(%d) vel(%d)\n", 
+    l_device, channel, note, velocity);
+  Serial.print(str_);
+#endif
+}
+
 
 void audioDeviceSampler::openSample(const char *s)
 {

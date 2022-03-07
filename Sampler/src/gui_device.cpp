@@ -7,7 +7,7 @@
 #include <vector>
 #include <functional>
 
-#include "widgets.h"
+#include "widgets/widgets.h"
 #include "gui_device.h"
 #include "audio_engine/audio_device.h"
 

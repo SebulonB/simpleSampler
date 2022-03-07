@@ -67,6 +67,8 @@ class audioDeviceSampler : public audioDevice
     void midiNoteOn(byte channel, byte note, byte velocity);
     void midiNoteOff(byte channel, byte note, byte velocity);    
 
+    void midiCC(byte channel, byte control, byte value);
+
   private:
     uint8_t *m_mem{NULL};
 

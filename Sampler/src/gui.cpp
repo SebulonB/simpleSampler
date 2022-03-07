@@ -9,7 +9,7 @@
 #include "audio_engine/audio_engine.h"
 #include "handler.h"
 #include "gui.h"
-#include "widgets.h"
+#include "widgets/widgets.h"
 #include "encoderKnobs.h"
 #include "gui_device.h"
 
