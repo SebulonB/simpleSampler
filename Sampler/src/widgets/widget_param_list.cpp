@@ -31,13 +31,19 @@ widgetParamList::widgetParamList( Adafruit_SSD1306 *disp,
                       const char *device,
                       const __FlashStringHelper *label, 
                       const __FlashStringHelper *param,
-                      uint16_t val_x_pos, enum UNIT u ) : widgetParam()
+                      uint16_t val_x_pos, const char *s[], uint32_t n ) : widgetParam()
 {
   m_display      = disp;
   m_value_x_pos  = val_x_pos;
-  m_unit         = u;
+ 
+  for(uint32_t i=0; i<n; i++){
+    m_str_l.push_back(s[i]);
+  }
+  
+  m_max          = (m_str_l.size() - 1);
+
   m_widget_type  = widget::PARAM;  
-  m_param_type   = INT;
+  m_param_type   = LIST;
   m_label        = new widgetLabel(disp, label); 
   l_device       = device; 
   l_param        = reinterpret_cast<const char *>(param); 
@@ -51,9 +57,6 @@ void widgetParamList::init()
   m_label->getSize(w,h);
   m_height = h;
 
-  char str[10];
-  cal_val_str(str);
-
   m_width = m_value_x_pos + m_value_width;
 }
 
@@ -66,22 +69,22 @@ void widgetParamList::setUpdateCallback(std::function <void (int)> funcp)
 void widgetParamList::callback()
 {
   if(p_udpateEngine_callback == nullptr) {return;}
-  p_udpateEngine_callback(m_value);
+  p_udpateEngine_callback(m_value+m_offset);
 }   
 
-void widgetParamList::setValue(int m)
+void widgetParamList::setValue(uint32_t m)
 {
   if(m >= m_max){m=m_max;}
   if(m <= m_min){m=m_min;}
 
   //clear last digit
-  if (m >=  999.9){
+  if (m >=  999){
     m           = (uint32_t)std::round(m);
     uint32_t ml = (uint32_t)m%10;
     m  -= ml;
   }
   //round
-  else if( m >= 99.9){
+  else if( m >= 99){
     m = (uint32_t)std::round(m);     
   }
 
@@ -90,7 +93,7 @@ void widgetParamList::setValue(int m)
   callback();
 }
 
-void  widgetParamList::setValueDefault(int m)
+void  widgetParamList::setValueDefault(uint32_t m)
 {
     m_value_default = m;
 }
@@ -99,11 +102,11 @@ void  widgetParamList::useDefaultVal(){
     setValue(m_value_default);
 }
 
-int   widgetParamList::getValue(void){
+uint32_t   widgetParamList::getValue(void){
     return m_value;
 }
 
-int   widgetParamList::getMax(void){
+uint32_t   widgetParamList::getMax(void){
     return m_max;
 }
 
@@ -120,22 +123,11 @@ void widgetParamList::inc_value(bool inc)
     iv = -iv;
   }
 
-  int val = m_value;
+  int val = (int)m_value;
   val += iv;
+  if(val < 0){return;}
 
   setValue(val);
-}
-
-uint16_t widgetParamList::cal_val_str(char *str)
-{
-  //generate value string
-  uint16_t l=0; 
-  sprintf(str, "%d", m_value);
-  l = strlen(str);
-  m_value_text_size = m_label->getTextSize();
-  m_value_width     = 5 * m_value_text_size * strlen(str) + strlen(str) + 1;
-
-  return l;
 }
 
 void widgetParamList::draw()
@@ -147,9 +139,12 @@ void widgetParamList::draw()
   m_label->setActive(m_active && !m_edit);
   m_label->forceDraw();
 
-  char str[10];
-  memset(str, 0, 10*sizeof(char));
-  cal_val_str(str);
+  if(m_value >= m_str_l.size()){return;}
+
+  const char *str = m_str_l.at(m_value);
+
+  m_value_text_size = m_label->getTextSize();
+  m_value_width     = 5 * m_value_text_size * strlen(str) + strlen(str) + 1;
   uint16_t x=m_pos_x+m_value_x_pos;
   
   //clear Value on Screen

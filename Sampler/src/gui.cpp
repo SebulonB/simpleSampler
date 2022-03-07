@@ -85,7 +85,7 @@ widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
 
 
 //--------------- GUI Devices -----------------------
-#define GUI_DEVICE_X_POS   32
+#define GUI_DEVICE_X_POS   31
 #define GUI_DEVICE_Y_POS   0
 #define GUI_DEVICE_WIDTH   (SCREEN_WIDTH-GUI_DEVICE_X_POS)
 #define GUI_DEVICE_HEIGHT  SCREEN_HEIGHT

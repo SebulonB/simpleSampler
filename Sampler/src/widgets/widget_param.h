@@ -10,7 +10,8 @@ class widgetParam : public widget {
     enum PARAM_TYPE{
       FLOAT,
       INT,
-      BROWSER
+      BROWSER,
+      LIST,
     };
   
     void setEdit(bool e);
@@ -21,7 +22,7 @@ class widgetParam : public widget {
     void triggerCallback();
 
     bool isParamType(enum PARAM_TYPE t);
-    
+
   protected:
     bool     m_edit{false};  
     widgetLabel *m_label;

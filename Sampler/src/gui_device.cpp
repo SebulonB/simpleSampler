@@ -8,10 +8,12 @@
 #include <functional>
 
 #include "widgets/widgets.h"
+#include "widgets/widget_midi_index_list.h"
 #include "gui_device.h"
 #include "audio_engine/audio_device.h"
 
-#define PARAM_VALUE_POS 55
+
+#define PARAM_VALUE_POS 53
 #define PARAM_VALUE_POS_BROWSER 40
 
 
@@ -245,39 +247,33 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   m_params.push_back( param_i  );  
   m_param_list->pushWidget( param_i );   
 
+  //note min 
+  widgetParamList *param_l = new widgetParamList( m_display, l_device,
+                                                  F("Note Min"), F("SRC_MidiNoteMin"), 
+                                                  m_param_y_pos, midi_index_list_with_number, MIDI_INDEX_LIST_NUMBER_LEN );
 
-  //Note Min
-  param_i = new widgetParamInt( m_display, l_device,
-                                                F("Note Min"), F("SRC_MidiNoteMin"), 
-                                                m_param_y_pos );
+  param_l->setValueDefault(0);
 
-  param_i->setMax(127);
-  param_i->setMin(1);
-  param_i->setValueDefault(1);
-
-  param_i->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
+  param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
             std::placeholders::_1));
 
-  m_params.push_back( param_i  );  
-  m_param_list->pushWidget( param_i );   
+  m_params.push_back( param_l );  
+  m_param_list->pushWidget( param_l );     
 
-
-  //Note Max
-  param_i = new widgetParamInt( m_display, l_device,
+  //note max
+  param_l =                new widgetParamList( m_display, l_device,
                                                 F("Note Max"), F("SRC_MidiNoteMax"), 
-                                                m_param_y_pos );
+                                                m_param_y_pos, midi_index_list_with_number, MIDI_INDEX_LIST_NUMBER_LEN );
 
-  param_i->setMax(127);
-  param_i->setMin(1);
-  param_i->setValueDefault(127);
+  param_l->setValueDefault(0);
 
-  param_i->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMax,
+  param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
             std::placeholders::_1));
 
-  m_params.push_back( param_i  );  
-  m_param_list->pushWidget( param_i );       
+  m_params.push_back( param_l );  
+  m_param_list->pushWidget( param_l );     
 
 
   //push to gui list
@@ -398,6 +394,20 @@ void guiDevice::read_handler(patchHandler *m_handler)
       p->triggerCallback();
     }
 
+    else if (pa->isParamType(widgetParam::LIST)){
+      widgetParamList *p = reinterpret_cast<widgetParamList *>(pa); 
+      float val;
+      if(!m_handler->getParamValue(p->getLDevice(), p->getLParam(), val)){
+        p->useDefaultVal();
+      }
+      else{
+        p->setValue((int)val);
+      }
+
+      //udate guie
+      p->triggerCallback();
+    }    
+
     else if(pa->isParamType(widgetParam::BROWSER)){
       widgetParamBrowser * p = reinterpret_cast<widgetParamBrowser *>(pa); 
       String val;
@@ -406,7 +416,7 @@ void guiDevice::read_handler(patchHandler *m_handler)
       }
 
       p->triggerCallback();
-    }
+    }    
   }
 }
 
@@ -426,6 +436,11 @@ void guiDevice::save_handler(patchHandler *m_handler)
 
     else if (pa->isParamType(widgetParam::INT)){
       widgetParamInt *p = reinterpret_cast<widgetParamInt *>(pa); 
+      m_handler->saveParamValue(p->getLDevice(), p->getLParam(), (float)p->getValue());
+    }
+
+    else if (pa->isParamType(widgetParam::LIST)){
+      widgetParamList *p = reinterpret_cast<widgetParamList *>(pa); 
       m_handler->saveParamValue(p->getLDevice(), p->getLParam(), (float)p->getValue());
     }
 

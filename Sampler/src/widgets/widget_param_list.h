@@ -8,36 +8,33 @@
 class widgetParamList : public widgetParam {
 
   public:
-    enum UNIT{
-      UNKNOWN,
-    };
-
     //widgetParamInt(Adafruit_SSD1306 *disp, const char *label, uint16_t val_x_pos, enum UNIT u);
     widgetParamList(  Adafruit_SSD1306 *disp, 
                       const char *device,
                       const __FlashStringHelper *label, 
                       const __FlashStringHelper *param,
-                      uint16_t val_x_pos, enum UNIT u=UNKNOWN );    
+                      uint16_t val_x_pos, const char * s[], uint32_t n);    
   
     //API
     void  setUpdateCallback(std::function <void (int)> funcp);
-    enum UNIT getUnit(){return m_unit;}
-    void  setValueDefault(int m);
+
+    void  setValueDefault(uint32_t m);
     void  useDefaultVal();
-    void  setValue(int m);
-    int   getValue(void);
-    int   getMax(void);
-    void  pushWidget(widget *w);
+
+    void       setValue(uint32_t m);
+    uint32_t   getValue(void);
+    uint32_t   getMax(void);
 
   private:
-    std::vector<widgetList *> m_list;
 
-    int m_min{0};
-    int m_max{0};
-    int m_value{0};
-    int m_value_default{0};
+    uint32_t m_min{0};
+    uint32_t m_max{0};
+    uint32_t m_value{0};
+    uint32_t m_value_default{0};
+    uint32_t m_offset{1};
 
-    enum UNIT m_unit{UNKNOWN};
+    std::vector<const char *> m_str_l;
+
     uint16_t  m_value_text_size{0};
 
     uint16_t  m_value_width{0};
@@ -49,7 +46,7 @@ class widgetParamList : public widgetParam {
 
     void set_edit(bool e){m_edit = e;}
     void init();
-    uint16_t cal_val_str(char* str);
+
     void inc_value(bool inc);
     void draw();
 
