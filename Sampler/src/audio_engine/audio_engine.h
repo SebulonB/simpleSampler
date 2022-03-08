@@ -47,6 +47,8 @@ class audioEngine
     void midiNoteOn(byte channel, byte note, byte velocity);
     void midiNoteOff(byte channel, byte note, byte velocity);
 
+    void midiCC(byte channel, byte control, byte value);
+
 
   private:
     audioDevice * m_devices[DEVICE_NUM];

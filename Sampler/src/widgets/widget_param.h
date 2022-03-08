@@ -19,6 +19,8 @@ class widgetParam : public widget {
 
     const char * getLDevice();
     const char * getLParam();
+    const char * getLLabel();
+
     void triggerCallback();
 
     bool isParamType(enum PARAM_TYPE t);

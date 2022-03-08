@@ -25,6 +25,13 @@ void audioEngine::midiNoteOff(byte channel, byte note, byte velocity)
   }
 }
 
+void audioEngine::midiCC(byte channel, byte control, byte value)
+{
+  for(int i=0; i<DEVICE_NUM; i++){
+    m_devices[i]->midiCC(channel, control, value);
+  }
+}
+
 
 audioEngine::audioEngine()
 {

@@ -48,6 +48,12 @@ const char * widgetParam::getLParam(){
     return l_param;
 }
 
+const char * widgetParam::getLLabel()
+{
+    if(m_label == NULL){return str_unknown;}
+    return m_label->getText();
+}
+
 void widgetParam::triggerCallback(){
     callback();
 }

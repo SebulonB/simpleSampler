@@ -9,8 +9,10 @@
 
 #include "widgets/widgets.h"
 #include "widgets/widget_midi_index_list.h"
+
 #include "gui_device.h"
 #include "audio_engine/audio_device.h"
+
 
 
 #define PARAM_VALUE_POS 53
@@ -51,10 +53,32 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   //param list
   m_param_list = new widgetList(m_display, m_pos_x, m_pos_y, m_width, m_height);
 
+
+  //-------------------{ Sampler Modulation Init }-----------------------
+  //Midi CCa 
+  widgetParamList *param_midi_cc_a  = new widgetParamList( m_display, l_device,
+                                                            F("CCa  ->"), F("SRC_MIDI_MOD_CCA"), 
+                                                            m_param_y_pos );
+
+  param_midi_cc_a->setValueDefault(0);
+  param_midi_cc_a->pushString(str_none);
+
+  //POTa
+  widgetParamList *param_pot_a_cc  = new widgetParamList( m_display, l_device,
+                                                          F("POTa ->"), F("SRC_POTA_MOD_CC"), 
+                                                          m_param_y_pos );
+  param_pot_a_cc->setValueDefault(0);
+  param_pot_a_cc->pushString(str_none);
+  
+   
+
+
   //-------------------{ Sampler Main }-----------------------
 
   widgetParamFloat *param_f;
 
+ // m_param_list->pushWidget( new widgetLabel( m_display, F("     ( Main )     ")) ); 
+  m_param_list->pushWidget( new widgetLabel( m_display, F("-----{Main}-----")) ); 
   //volume
   param_f = new widgetParamFloat( m_display, l_device, 
                                   F("Volume"), F("Main_Volume"), 
@@ -65,22 +89,68 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
 
+  //set modulation
+  param_midi_cc_a->pushString(param_f->getLLabel());
+  param_pot_a_cc->pushString(param_f->getLLabel());
+
   m_params.push_back( param_f );
   m_param_list->pushWidget(param_f);
 
 
-  // //attack
-  // param_f = new widgetParamFloat( m_display, l_device, 
-  //                                 F("Attack"), F("SRC_Attack"), 
-  //                                 m_param_y_pos, widgetParamFloat::SECONDS );
-  // param_f->setMax(9999);
-  // param_f->setValueDefault(0);
-  // param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setAttack,
-  //           reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
-  //           std::placeholders::_1));
 
-  // m_params.push_back( param_f );  
-  // m_param_list->pushWidget(param_f);
+
+  //-------------------{ Player Param }-----------------------
+  //Pitch
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Pitch"), F("SRC_Pitch"), 
+                                  m_param_y_pos, widgetParamFloat::PERCENT );
+  param_f->setMax(80.0);
+  param_f->setMin(-80.0);  
+  param_f->setValueDefault(0);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setPitch,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  //set modulation
+  param_midi_cc_a->pushString(param_f->getLLabel());
+  param_pot_a_cc->pushString(param_f->getLLabel());
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
+
+  
+  //start
+  param_f = new widgetParamFloat( m_display, l_device, 
+                                  F("Start"), F("SRC_Start"), 
+                                  m_param_y_pos, widgetParamFloat::PERCENT );
+  param_f->setMax(95);
+  param_f->setValueDefault(0);
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setStart,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
+            std::placeholders::_1));
+
+  //set modulation
+  param_midi_cc_a->pushString(param_f->getLLabel());
+  param_pot_a_cc->pushString(param_f->getLLabel());
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f);
+
+
+  //-------------------{ Player Envelop }-----------------------
+  m_param_list->pushWidget( new widgetLabel( m_display, F("---{Envelope}---")) ); 
+  //attack
+  param_f = new widgetParamFloat( m_display, l_device, 
+                                  F("Attack"), F("SRC_Attack"), 
+                                  m_param_y_pos, widgetParamFloat::SECONDS );
+  param_f->setMax(9999);
+  param_f->setValueDefault(0);
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setAttack,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f);
 
 
   // //hold
@@ -97,58 +167,46 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   // m_param_list->pushWidget(param_f); 
 
 
-  // //decay
-  // param_f = new widgetParamFloat( m_display, l_device,
-  //                                 F("Decay"), F("SRC_Decay"), 
-  //                                 m_param_y_pos, widgetParamFloat::SECONDS );
-  // param_f->setMax(9999);
-  // param_f->setValueDefault(100);  
-  // param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setDecay,
-  //           reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
-  //           std::placeholders::_1));
-
-  // m_params.push_back( param_f );  
-  // m_param_list->pushWidget(param_f); 
-
-
-  // //sustain
-  // param_f = new widgetParamFloat( m_display, l_device,
-  //                                 F("Sustain"), F("SRC_Sustain"), 
-  //                                 m_param_y_pos, widgetParamFloat::PERCENT );
-  // param_f->setMax(100);
-  // param_f->setValueDefault(80);  
-  // param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setSustain,
-  //           reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
-  //           std::placeholders::_1));
-
-  // m_params.push_back( param_f );  
-  // m_param_list->pushWidget(param_f); 
-
-  // //sustain
-  // param_f = new widgetParamFloat( m_display, l_device,
-  //                                 F("Release"), F("SRC_Release"), 
-  //                                 m_param_y_pos, widgetParamFloat::SECONDS );
-  // param_f->setMax(9999);
-  // param_f->setValueDefault(250);  
-  // param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setRelease,
-  //           reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
-  //           std::placeholders::_1));
-
-  // m_params.push_back( param_f );  
-  // m_param_list->pushWidget(param_f); 
-
-  //start
-  param_f = new widgetParamFloat( m_display, l_device, 
-                                  F("Start"), F("SRC_Start"), 
-                                  m_param_y_pos, widgetParamFloat::PERCENT );
-  param_f->setMax(95);
-  param_f->setValueDefault(0);
-  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setStart,
-            reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
+  //decay
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Decay"), F("SRC_Decay"), 
+                                  m_param_y_pos, widgetParamFloat::SECONDS );
+  param_f->setMax(9999);
+  param_f->setValueDefault(100);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setDecay,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
             std::placeholders::_1));
 
   m_params.push_back( param_f );  
-  m_param_list->pushWidget(param_f);
+  m_param_list->pushWidget(param_f); 
+
+
+  //sustain
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Sustain"), F("SRC_Sustain"), 
+                                  m_param_y_pos, widgetParamFloat::PERCENT );
+  param_f->setMax(100);
+  param_f->setValueDefault(80);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setSustain,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
+
+  //sustain
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Release"), F("SRC_Release"), 
+                                  m_param_y_pos, widgetParamFloat::SECONDS );
+  param_f->setMax(9999);
+  param_f->setValueDefault(250);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setRelease,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
+
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
+
 
 
   // //length
@@ -165,25 +223,11 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   //m_param_list->pushWidget(param_f); 
 
 
-  //-------------------{ Player Param }-----------------------
-  //Pitch
-  param_f = new widgetParamFloat( m_display, l_device,
-                                  F("Pitch"), F("SRC_Pitch"), 
-                                  m_param_y_pos, widgetParamFloat::PERCENT );
-  param_f->setMax(80.0);
-  param_f->setMin(-80.0);  
-  param_f->setValueDefault(0);  
-  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setPitch,
-            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
-            std::placeholders::_1));
-
-  m_params.push_back( param_f );  
-  m_param_list->pushWidget(param_f); 
-
 
 
   //-------------------{ Channel Vol }-----------------------
   //CH 1
+  m_param_list->pushWidget( new widgetLabel( m_display, F("----{Output}----")) ); 
   param_f = new widgetParamFloat( m_display, l_device,
                                   F("Vol_ch1"), F("SRC_Vol_ch1"), 
                                   m_param_y_pos, widgetParamFloat::PERCENT );
@@ -214,6 +258,7 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
 
 
   //-------------------{ Browser }-----------------------
+  m_param_list->pushWidget( new widgetLabel( m_display, F("----{Sample}----")) ); 
 
   widgetParamBrowser *param_b = new widgetParamBrowser( m_display, l_device,
                                                         F("Sample"), F("SRC_SampleName"), 
@@ -230,10 +275,10 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
 
 
   //-------------------{ Midi }-----------------------
-
+  m_param_list->pushWidget( new widgetLabel( m_display, F("-----{midi}-----")) ); 
   //CH
   widgetParamInt *param_i = new widgetParamInt( m_display, l_device,
-                                                F("Midi CH"), F("SRC_MidiCH"), 
+                                                F("CH"), F("SRC_MidiCH"), 
                                                 m_param_y_pos );
 
   param_i->setMax(16);
@@ -249,10 +294,11 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
 
   //note min 
   widgetParamList *param_l = new widgetParamList( m_display, l_device,
-                                                  F("Note Min"), F("SRC_MidiNoteMin"), 
+                                                  F("Min"), F("SRC_MidiNoteMin"), 
                                                   m_param_y_pos, midi_index_list_with_number, MIDI_INDEX_LIST_NUMBER_LEN );
 
   param_l->setValueDefault(0);
+  param_l->setOffset(0);
 
   param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
@@ -263,10 +309,11 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
 
   //note max
   param_l =                new widgetParamList( m_display, l_device,
-                                                F("Note Max"), F("SRC_MidiNoteMax"), 
+                                                F("Max"), F("SRC_MidiNoteMax"), 
                                                 m_param_y_pos, midi_index_list_with_number, MIDI_INDEX_LIST_NUMBER_LEN );
 
   param_l->setValueDefault(0);
+  param_l->setOffset(0);
 
   param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
@@ -274,6 +321,16 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
 
   m_params.push_back( param_l );  
   m_param_list->pushWidget( param_l );     
+
+  //-------------------{ Modulation GUI }-----------------------
+  m_param_list->pushWidget( new widgetLabel( m_display, F("--{Modulation}--")) ); 
+
+  m_params.push_back( param_midi_cc_a);  
+  m_param_list->pushWidget( param_midi_cc_a);     
+
+  m_params.push_back( param_pot_a_cc);  
+  m_param_list->pushWidget( param_pot_a_cc);   
+
 
 
   //push to gui list

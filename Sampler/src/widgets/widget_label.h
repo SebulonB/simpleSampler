@@ -17,6 +17,8 @@ class widgetLabel : public widget{
     void setText(const char *label);
     uint8_t getTextSize();
 
+    const char * getText();
+
   private:   
     const char * m_label{NULL};
     uint8_t      m_text_size{1};

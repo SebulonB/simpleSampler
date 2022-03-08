@@ -50,6 +50,26 @@ widgetParamList::widgetParamList( Adafruit_SSD1306 *disp,
   init();
 }
 
+widgetParamList::widgetParamList(  Adafruit_SSD1306 *disp, 
+                                    const char *device,
+                                    const __FlashStringHelper *label, 
+                                    const __FlashStringHelper *param,
+                                    uint16_t val_x_pos)
+{
+  m_display      = disp;
+  m_value_x_pos  = val_x_pos;
+ 
+  m_str_l.push_back(str_unknown);
+  m_max          = (m_str_l.size() - 1);
+
+  m_widget_type  = widget::PARAM;  
+  m_param_type   = LIST;
+  m_label        = new widgetLabel(disp, label); 
+  l_device       = device; 
+  l_param        = reinterpret_cast<const char *>(param); 
+  init();   
+}      
+
 void widgetParamList::init()
 {
   //ger height from label
@@ -60,6 +80,17 @@ void widgetParamList::init()
   m_width = m_value_x_pos + m_value_width;
 }
 
+void  widgetParamList::pushString(const char *str)
+{
+  //clear on init
+  if(!m_init_str_l){
+    m_str_l.clear();
+    m_init_str_l = true;
+  }
+
+  m_str_l.push_back(str);
+  m_max          = (m_str_l.size() - 1);
+}
 
 void widgetParamList::setUpdateCallback(std::function <void (int)> funcp)
 {
@@ -96,6 +127,10 @@ void widgetParamList::setValue(uint32_t m)
 void  widgetParamList::setValueDefault(uint32_t m)
 {
     m_value_default = m;
+}
+
+void  widgetParamList::setOffset(uint32_t m){
+    m_offset = m;
 }
 
 void  widgetParamList::useDefaultVal(){

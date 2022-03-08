@@ -67,6 +67,12 @@ void widgetLabel::setText(const char *label){
   init();
 }
 
+const char * widgetLabel::getText()
+{
+    if(m_label == NULL){return str_unknown;}
+    return m_label;
+}
+
 void widgetLabel::init(void){
   m_width = 5 * m_text_size * strlen(m_label) + strlen(m_label) + 1;
   m_height = 8 * m_text_size + 1;

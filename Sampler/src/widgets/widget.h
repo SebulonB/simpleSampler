@@ -10,9 +10,9 @@
 #include <vector>
 
 
-//global strings
-const char str_unknown[] PROGMEM = "unknown";
-
+//global strings (PROGMEM couse error)
+const char str_unknown[] = "unknown";
+const char str_none[]    = "none";
 
 class widget {
 
@@ -35,7 +35,9 @@ class widget {
     void setActive(bool b);
 
     bool isWidgetType(enum WIDGET_TYPE t);
-    
+
+    const char * getLabel();
+
   protected:
     Adafruit_SSD1306 *m_display{NULL};
     uint16_t    m_pos_x{0};
