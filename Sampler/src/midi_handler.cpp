@@ -22,8 +22,8 @@ void MidiHandlerSetAudioEngine(audioEngine *e)
 //                         | Midi Calbacks |
 //
 void myControlChange(byte channel, byte control, byte value) {
-//  sprintf(str_, "Control Change,  ch(%2d) control(%3d) value(%3d)\n", channel, control, value);
-//  Serial.print(str_);
+  if(m_engine == nullptr){return;}
+  m_engine->midiCC(channel, control, value);
 }
 
 void myClock() {

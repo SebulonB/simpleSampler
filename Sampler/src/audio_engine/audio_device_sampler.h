@@ -10,6 +10,7 @@
 #include "wav2mem.h"
 #include "playMemC.h"
 
+#include "device_param.h"
 
 /*
 // GUItool: begin automatically generated code
@@ -25,11 +26,24 @@ AudioConnection          patchCord3(envelope, 0, outMixerCH2, 0);
 */
 
 
-//#define DEBUG_AUDIO_DEVICE_SAMPLER
+#define DEBUG_AUDIO_DEVICE_SAMPLER
 
 
 class audioDeviceSampler : public audioDevice
 {
+
+  typedef enum {
+    MOD_DEST_NONE,
+    MOD_DEST_VOLUME,
+  } mod_dest_t;
+
+  enum MOD_CC{
+    MOD_CC_A = 0,
+    MOD_CC_B,
+    MOD_CC_C,
+    MOD_CC_NUM
+  };
+
   public:
     audioDeviceSampler(const __FlashStringHelper *device);
     AudioStream *getOutputStream(uint8_t audio_ch){
@@ -60,9 +74,9 @@ class audioDeviceSampler : public audioDevice
 
 
     //MIDI
-    void setNoteMin(uint8_t m){if(m>MIDI_VAL_MAX){return;} m_note_min=m;}
-    void setNoteMax(uint8_t m){if(m>MIDI_VAL_MAX){return;} m_note_max=m;}
-    void setMidiCh(uint8_t m){if(m>MIDI_CH_MAX){return;} m_midi_ch=m;}
+    void setNoteMin(uint8_t m);
+    void setNoteMax(uint8_t m);
+    void setMidiCh(uint8_t m);
 
     void midiNoteOn(byte channel, byte note, byte velocity);
     void midiNoteOff(byte channel, byte note, byte velocity);    
@@ -72,14 +86,22 @@ class audioDeviceSampler : public audioDevice
   private:
     uint8_t *m_mem{NULL};
 
-    float       m_master_vol{0.0};
+    deviceParam m_master_vol;
+    
     float       m_velocity{1.0};
     float       m_ch1_vol{0.0};
     float       m_ch2_vol{0.0};    
 
+    float       m_sustain{1.0};
+
     uint8_t     m_note_min{0};
     uint8_t     m_note_max{MIDI_VAL_MAX};
     uint8_t     m_midi_ch{1};
+
+    //modulation
+    uint8_t     m_cc_src[MOD_CC_NUM];
+    mod_dest_t  m_cc_dest[MOD_CC_NUM];
+    uint8_t     m_cc_mod_slot[MOD_CC_NUM];
 
     void set_volume();
 

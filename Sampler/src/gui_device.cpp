@@ -153,18 +153,18 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   m_param_list->pushWidget(param_f);
 
 
-  // //hold
-  // param_f = new widgetParamFloat( m_display, l_device,
-  //                                 F("Hold"), F("SRC_Hold"), 
-  //                                 m_param_y_pos, widgetParamFloat::SECONDS );
-  // param_f->setMax(9999);
-  // param_f->setValueDefault(100);  
-  // param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setHold,
-  //           reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
-  //           std::placeholders::_1));
+  //hold
+  param_f = new widgetParamFloat( m_display, l_device,
+                                  F("Hold"), F("SRC_Hold"), 
+                                  m_param_y_pos, widgetParamFloat::SECONDS );
+  param_f->setMax(9999);
+  param_f->setValueDefault(100);  
+  param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setHold,
+            reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
+            std::placeholders::_1));
 
-  // m_params.push_back( param_f );  
-  // m_param_list->pushWidget(param_f); 
+  m_params.push_back( param_f );  
+  m_param_list->pushWidget(param_f); 
 
 
   //decay
@@ -298,7 +298,7 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
                                                   m_param_y_pos, midi_index_list_with_number, MIDI_INDEX_LIST_NUMBER_LEN );
 
   param_l->setValueDefault(0);
-  param_l->setOffset(0);
+  param_l->setOffset(1);
 
   param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
@@ -313,9 +313,9 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
                                                 m_param_y_pos, midi_index_list_with_number, MIDI_INDEX_LIST_NUMBER_LEN );
 
   param_l->setValueDefault(0);
-  param_l->setOffset(0);
+  param_l->setOffset(1);
 
-  param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMin,
+  param_l->setUpdateCallback(std::bind(&audioDeviceSampler::setNoteMax,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
             std::placeholders::_1));
 
