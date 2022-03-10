@@ -1,7 +1,7 @@
 #ifndef device_param_h_
 #define device_param_h_
 
-//#define DEBUG_DEVICE_PARAM
+#define DEBUG_DEVICE_PARAM
 
 #define MAX_MOD 6
 

@@ -5,12 +5,15 @@
 #include <SerialFlash.h>
 #include <MIDI.h>
 
+#include "misc.h"
+#include "audio_device_strings.h"
 #include "audio_device.h"
 #include "audio_device_sampler.h"
 #include "tinyalloc/tinyalloc.h"
 
 
 extern uint8_t external_psram_size; //in MB. Set in startup.c
+
 
 
 audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audioDevice()
@@ -34,16 +37,24 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
   //envelope->release(0.0);
   //envelope->releaseNoteOn(0);
 
-  //reset mod
-  for(int i=0; i<MOD_CC_A; i++){
-    m_cc_src[i] = 0xff; //turn off
+  //reset mod midi
+  for(int i=0; i<MOD_CC_NUM; i++){
+    m_cc_dest[i] = MOD_DEST_NONE; //turn off
+    m_cc_mod_slot[i] = 0xff; //reset
   }
 
-  //reg CC0 -> CC_A -> Volume
-  m_cc_src[MOD_CC_A]      = 1; //CC1
-  m_cc_dest[MOD_CC_A]     = MOD_DEST_VOLUME;
-  m_cc_mod_slot[MOD_CC_A] = m_master_vol.getModIndex();
+  //reset mod pot
+  for(int i=0; i<MOD_POT_NUM; i++){
+    m_pot_dest[i] = MOD_DEST_NONE; //turn off
+    m_pot_mod_slot[i] = 0xff; //reset
+  }
 
+
+  //set label names
+  m_param_labels[MOD_DEST_NONE]   = str_device_param_none;
+  m_param_labels[MOD_DEST_VOLUME] = str_device_param_volume;  
+  m_param_labels[MOD_DEST_PITCH]  = str_device_param_start;    
+  m_param_labels[MOD_DEST_START]  = str_device_param_pitch;  
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Indit Audio Device Sampler (%s)\n", l_device);
@@ -52,6 +63,10 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
 
 }
 
+
+//
+//   ---------{ Midi Parser }------------
+//
 void audioDeviceSampler::midiNoteOn(byte channel, byte note, byte velocity)
 {
 
@@ -76,9 +91,6 @@ void audioDeviceSampler::midiNoteOn(byte channel, byte note, byte velocity)
     l_device, channel, note, velocity, m_note_min, m_note_max, p);
   Serial.print(str_);
 #endif
-
-
-
 }
 
 void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
@@ -103,17 +115,8 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
 #endif
 }    
 
-
 void audioDeviceSampler::midiCC(byte channel, byte control, byte value)
 {
-
-#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) midiCC ch(%d) cc(%d) val(%d)\n", 
-    l_device, channel, control, value);
-  Serial.print(str_);
-#endif
-
-
   if(channel != m_midi_ch){return;}
 
   int i=0;
@@ -127,19 +130,245 @@ void audioDeviceSampler::midiCC(byte channel, byte control, byte value)
     return;
   }
 
+  if( m_cc_dest[i] == MOD_DEST_NONE ){return;}
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) midiCC ch(%d) cc(%d) val(%d)\n", 
+    l_device, channel, control, value);
+  Serial.print(str_);
+#endif
+   
+  float val = mapf(value, 0, MIDI_VAL_MAX, m_cc_mod_min[i], m_cc_mod_max[i]); 
+  m_params[m_cc_dest[i]].setMod(m_cc_mod_slot[i], val);
+
   switch(m_cc_dest[i]){
     case MOD_DEST_VOLUME:
-      m_master_vol.setMod(m_cc_mod_slot[i], value/127.);
       set_volume();
-    break;
-
-    default:
     break;
   }
   
 }
 
+//
+//   ---------{ Midi Config }------------
+//
+void audioDeviceSampler::setNoteMin(uint8_t m){
+  if(m>MIDI_VAL_MAX){m = MIDI_VAL_MAX;}
 
+ #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setMidiNoteMin(%d)\n", l_device, m);
+  Serial.print(str_);
+#endif    
+  m_note_min=m;
+}
+
+void audioDeviceSampler::setNoteMax(uint8_t m)
+{
+  if(m>MIDI_VAL_MAX){m = MIDI_VAL_MAX;}
+
+ #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setMidiNoteMax(%d)\n", l_device, m);
+  Serial.print(str_);
+#endif    
+
+  m_note_max=m;
+}
+
+void audioDeviceSampler::setMidiCh(uint8_t m)
+{
+  if(m>MIDI_CH_MAX){return;} 
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) setMidiNoteMax(%d)\n", l_device, m);
+  Serial.print(str_);
+#endif    
+  
+  m_midi_ch=m;
+}
+
+//
+//   ---------{ Modulation Midi }--------------
+//
+const char *audioDeviceSampler::getParamString(mod_dest_t d){
+  return m_param_labels[d];
+}
+
+void audioDeviceSampler::modCCregParam( uint8_t index, uint8_t d)
+{
+  
+  if(index >=  MOD_CC_NUM){return;}
+  if(d >= MOD_DEST_NUM){return;}
+
+  mod_dest_t dest = static_cast<mod_dest_t>(d);
+
+  if(m_cc_dest[index] >= MOD_DEST_NUM){
+    m_cc_dest[index] = MOD_DEST_NONE;
+  }
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) CCx(%d) dest(%d) regCCParam(%s) unreg(%s)\n", 
+    l_device, index, dest, m_param_labels[dest], m_param_labels[m_cc_dest[index]]); //] );
+  Serial.print(str_);
+#endif
+
+  //unreg
+  m_params[m_cc_dest[index]].removeModIndex(m_cc_mod_slot[index]);      
+
+  // //reg
+  m_cc_dest[index] = dest; 
+  m_cc_mod_slot[index] = m_params[dest].getModIndex();      
+
+}
+
+void audioDeviceSampler::modCCsetCH(uint8_t index, uint8_t ch)
+{
+  if(index >=  MOD_CC_NUM){return;}
+  if(ch >= MIDI_VAL_MAX){return;}
+
+  m_cc_src[index] = ch;
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  if(m_cc_dest[index]>=MOD_DEST_NUM){return;}
+  sprintf(str_, "Sampler(%s) CCx(%d) setCHParam(%s) ch(%d)\n", 
+    l_device, index, m_param_labels[m_cc_dest[index]], ch);
+  Serial.print(str_);
+#endif
+
+
+}
+
+void audioDeviceSampler::modCCsetMax(uint8_t index, float v)
+{
+  if(index >=  MOD_CC_NUM){return;}
+  v /= 100.;
+  if     (v >  2.0){v = 2.0;}
+  else if(v < -2.0){v = 2.0;}
+
+  m_cc_mod_max[index] = v;  
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  if(m_cc_dest[index]>=MOD_DEST_NUM){return;}
+  sprintf(str_, "Sampler(%s) CCx(%d) setMax(%s) val(%6.3f)\n", 
+    l_device, index, m_param_labels[m_cc_dest[index]], v);
+  Serial.print(str_);
+#endif
+}
+
+void audioDeviceSampler::modCCsetMin(uint8_t index, float v)
+{
+  if(index >=  MOD_CC_NUM){return;}
+  v /= 100.;
+  if     (v >  2.0){v = 2.0;}
+  else if(v < -2.0){v = 2.0;}
+
+  m_cc_mod_min[index] = v;  
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  if(m_cc_dest[index]>=MOD_DEST_NUM){return;}
+  sprintf(str_, "Sampler(%s) CCx(%d) setMin(%s) val(%6.3f)\n", 
+    l_device, index, m_param_labels[m_cc_dest[index]], v);
+  Serial.print(str_);
+#endif
+}
+
+
+//
+//   ---------{ Modulation Midi }--------------
+//
+void audioDeviceSampler::setPot(byte channel, float v)
+{
+
+  byte i = channel;
+  if(i>=MOD_POT_NUM){
+    return;
+  }
+
+  if( m_pot_dest[i] == MOD_DEST_NONE ){return;}
+
+
+   
+  float val = mapf(v, 0.0, 1.0, m_pot_mod_min[i], m_pot_mod_max[i]); 
+  m_params[m_pot_dest[i]].setMod(m_pot_mod_slot[i], val);
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) Pot(%d) val(%6.3f) mapped(%6.3f) min(%6.3f) max(%6.3f)\n", 
+    l_device, channel, v, val, m_pot_mod_min[i], m_pot_mod_max[i]);
+  Serial.print(str_);
+#endif
+
+  switch(m_pot_dest[i]){
+    case MOD_DEST_VOLUME:
+      set_volume();
+    break;
+  }
+  
+}
+
+void audioDeviceSampler::modPotregParam( uint8_t index, uint8_t d)
+{
+  
+  if(index >=  MOD_POT_NUM){return;}
+  if(d >= MOD_DEST_NUM){return;}
+
+  mod_dest_t dest = static_cast<mod_dest_t>(d);
+
+  if(m_pot_dest[index] >= MOD_DEST_NUM){
+    m_pot_dest[index] = MOD_DEST_NONE;
+  }
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  sprintf(str_, "Sampler(%s) Pot(%d) dest(%d) regPotParam(%s) unreg(%s)\n", 
+    l_device, index, dest, m_param_labels[dest], m_param_labels[m_pot_dest[index]]); //] );
+  Serial.print(str_);
+#endif
+
+  //unreg
+  m_params[m_pot_dest[index]].removeModIndex(m_pot_mod_slot[index]);      
+
+  // //reg
+  m_pot_dest[index] = dest; 
+  m_pot_mod_slot[index] = m_params[dest].getModIndex();      
+
+}
+
+void audioDeviceSampler::modPotsetMax(uint8_t index, float v)
+{
+  if(index >=  MOD_CC_NUM){return;}
+  v /= 100.;
+  if     (v >  2.0){v = 2.0;}
+  else if(v < -2.0){v = 2.0;}
+
+  m_pot_mod_max[index] = v;  
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  if(m_pot_dest[index]>=MOD_DEST_NUM){return;}
+  sprintf(str_, "Sampler(%s) Pot(%d) setMax(%s) val(%6.3f)\n", 
+    l_device, index, m_param_labels[m_pot_dest[index]], v);
+  Serial.print(str_);
+#endif
+}
+
+void audioDeviceSampler::modPotsetMin(uint8_t index, float v)
+{
+  if(index >=  MOD_POT_NUM){return;}
+  v /= 100.;
+  if     (v >  2.0){v = 2.0;}
+  else if(v < -2.0){v = 2.0;}
+
+  m_pot_mod_min[index] = v;  
+
+#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
+  if(m_pot_dest[index]>=MOD_DEST_NUM){return;}
+  sprintf(str_, "Sampler(%s) Pot(%d) setMin(%s) val(%6.3f)\n", 
+    l_device, index, m_param_labels[m_pot_dest[index]], v);
+  Serial.print(str_);
+#endif
+}
+
+
+//
+//   ---------{ FileHandling }--------------
+//
 void audioDeviceSampler::openSample(const char *s)
 {
   if(s == nullptr || s == NULL){return;}
@@ -167,23 +396,11 @@ void audioDeviceSampler::openSample(const char *s)
 
 }
 
-void audioDeviceSampler::set_volume()
-{
-  float m  = m_master_vol.getVal();
-  float v1 = m_ch1_vol * m * m_velocity;
-  float v2 = m_ch2_vol * m * m_velocity;
 
 
-  AudioNoInterrupts();  
-  
-  for(int i=0; i<4; i++){
-    outMixerCH2->gain(i, v1);
-    outMixerCH1->gain(i, v2);
-  }
-
-  AudioInterrupts(); 
-}
-
+//
+//   ---------{ Param Volume }--------------
+//
 void audioDeviceSampler::setVolume(float v)
 {
 
@@ -193,10 +410,29 @@ void audioDeviceSampler::setVolume(float v)
 #endif
 
   //normalize
-  m_master_vol.setParam(v/100.);
+  m_params[MOD_DEST_VOLUME].setParam(v/100.);
   set_volume();
 }
 
+void audioDeviceSampler::set_volume()
+{
+  float m  = m_params[MOD_DEST_VOLUME].getVal();
+  float v1 = m_ch1_vol * m * m_velocity;
+  float v2 = m_ch2_vol * m * m_velocity;
+
+
+  AudioNoInterrupts();  
+  for(int i=0; i<4; i++){
+    outMixerCH2->gain(i, v1);
+    outMixerCH1->gain(i, v2);
+  }
+  AudioInterrupts(); 
+}
+
+
+//
+//   ---------{ Param Paning }--------------
+//
 void audioDeviceSampler::setVolCH1(float v)
 {
 
@@ -222,6 +458,10 @@ void audioDeviceSampler::setVolCH2(float v)
   set_volume();
 }
 
+
+//
+//   ---------{ Params Main }--------------
+//
 void audioDeviceSampler::setStart(float v)
 {
 
@@ -260,7 +500,9 @@ void audioDeviceSampler::setPitch(float v)
 }
 
 
-
+//
+//   ---------{ Envelop }--------------
+//
 void audioDeviceSampler::setAttack(float v)
 {
   AudioNoInterrupts();  
@@ -325,36 +567,4 @@ void audioDeviceSampler::setRelease(float v)
 
 
 
-void audioDeviceSampler::setNoteMin(uint8_t m){
-  if(m>MIDI_VAL_MAX){m = MIDI_VAL_MAX;}
 
- #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) setMidiNoteMin(%d)\n", l_device, m);
-  Serial.print(str_);
-#endif    
-  m_note_min=m;
-}
-
-void audioDeviceSampler::setNoteMax(uint8_t m)
-{
-  if(m>MIDI_VAL_MAX){m = MIDI_VAL_MAX;}
-
- #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) setMidiNoteMax(%d)\n", l_device, m);
-  Serial.print(str_);
-#endif    
-
-  m_note_max=m;
-}
-
-void audioDeviceSampler::setMidiCh(uint8_t m)
-{
-  if(m>MIDI_CH_MAX){return;} 
-
-#ifdef DEBUG_AUDIO_DEVICE_SAMPLER
-  sprintf(str_, "Sampler(%s) setMidiNoteMax(%d)\n", l_device, m);
-  Serial.print(str_);
-#endif    
-  
-  m_midi_ch=m;
-}

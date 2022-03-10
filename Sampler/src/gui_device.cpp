@@ -50,26 +50,13 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   Serial.print(str_);
 #endif  
 
+  audioDeviceSampler * engine_device = reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler ) );
+  
+
   //param list
   m_param_list = new widgetList(m_display, m_pos_x, m_pos_y, m_width, m_height);
 
 
-  //-------------------{ Sampler Modulation Init }-----------------------
-  //Midi CCa 
-  widgetParamList *param_midi_cc_a  = new widgetParamList( m_display, l_device,
-                                                            F("CCa  ->"), F("SRC_MIDI_MOD_CCA"), 
-                                                            m_param_y_pos );
-
-  param_midi_cc_a->setValueDefault(0);
-  param_midi_cc_a->pushString(str_none);
-
-  //POTa
-  widgetParamList *param_pot_a_cc  = new widgetParamList( m_display, l_device,
-                                                          F("POTa ->"), F("SRC_POTA_MOD_CC"), 
-                                                          m_param_y_pos );
-  param_pot_a_cc->setValueDefault(0);
-  param_pot_a_cc->pushString(str_none);
-  
    
 
 
@@ -89,9 +76,6 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
 
-  //set modulation
-  param_midi_cc_a->pushString(param_f->getLLabel());
-  param_pot_a_cc->pushString(param_f->getLLabel());
 
   m_params.push_back( param_f );
   m_param_list->pushWidget(param_f);
@@ -111,14 +95,9 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice(  i_engine_sampler )),
             std::placeholders::_1));
 
-  //set modulation
-  param_midi_cc_a->pushString(param_f->getLLabel());
-  param_pot_a_cc->pushString(param_f->getLLabel());
-
   m_params.push_back( param_f );  
-  m_param_list->pushWidget(param_f); 
+  m_param_list->pushWidget(param_f);
 
-  
   //start
   param_f = new widgetParamFloat( m_display, l_device, 
                                   F("Start"), F("SRC_Start"), 
@@ -128,10 +107,6 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   param_f->setUpdateCallback(std::bind(&audioDeviceSampler::setStart,
             reinterpret_cast<audioDeviceSampler *>(engine->getDevice( i_engine_sampler )),
             std::placeholders::_1));
-
-  //set modulation
-  param_midi_cc_a->pushString(param_f->getLLabel());
-  param_pot_a_cc->pushString(param_f->getLLabel());
 
   m_params.push_back( param_f );  
   m_param_list->pushWidget(param_f);
@@ -322,14 +297,355 @@ guiDeviceSampler::guiDeviceSampler( Adafruit_SSD1306 *disp,
   m_params.push_back( param_l );  
   m_param_list->pushWidget( param_l );     
 
+
+  //-------------------{ Sampler Modulation Pot }-----------------------
+  //----- PotA
+  widgetParamList *param_pot_a       = new widgetParamList( m_display, l_device,
+                                                            F("POTa ->"), F("SRC_POT_MOD_A"), 
+                                                            m_param_y_pos-5 );
+
+  param_pot_a->setValueDefault(0);
+
+  param_pot_a->setUpdateCallback( std::bind(&audioDeviceSampler::modPotregParam,
+                                                 engine_device,
+                                                 0, std::placeholders::_1) );  
+
+  //----- PotA Min
+  widgetParamFloat *param_pot_a_min = new widgetParamFloat( m_display, l_device,
+                                          F("POTa Min"), F("SRC_POT_MOD_A_MIN"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_pot_a_min->setMax( 200);  
+  param_pot_a_min->setMin(-200);
+  param_pot_a_min->setValueDefault(0);  
+  param_pot_a_min->setUpdateCallback( std::bind(&audioDeviceSampler::modPotsetMin,
+                                                    engine_device,
+                                                    0, std::placeholders::_1) );  
+
+
+  //----- PotA Max
+  widgetParamFloat *param_pot_a_max = new widgetParamFloat( m_display, l_device,
+                                          F("POTa Max"), F("SRC_POT_MOD_A_MAX"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_pot_a_max->setMax( 200);  
+  param_pot_a_max->setMin(-200);
+  param_pot_a_max->setValueDefault(0);  
+  param_pot_a_max->setUpdateCallback( std::bind(&audioDeviceSampler::modPotsetMax,
+                                                    engine_device,
+                                                    0, std::placeholders::_1) );  
+
+
+  //----- PotB
+  widgetParamList *param_pot_b       = new widgetParamList( m_display, l_device,
+                                                            F("POTb ->"), F("SRC_POT_MOD_B"), 
+                                                            m_param_y_pos-5 );
+
+  param_pot_b->setValueDefault(0);
+
+  param_pot_b->setUpdateCallback( std::bind(&audioDeviceSampler::modPotregParam,
+                                                 engine_device,
+                                                 1, std::placeholders::_1) );  
+
+  //----- PotB Min
+  widgetParamFloat *param_pot_b_min = new widgetParamFloat( m_display, l_device,
+                                          F("POTb Min"), F("SRC_POT_MOD_B_MIN"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_pot_b_min->setMax( 200);  
+  param_pot_b_min->setMin(-200);
+  param_pot_b_min->setValueDefault(0);  
+  param_pot_b_min->setUpdateCallback( std::bind(&audioDeviceSampler::modPotsetMin,
+                                                    engine_device,
+                                                    1, std::placeholders::_1) );  
+
+
+  //----- PotB Max
+  widgetParamFloat *param_pot_b_max = new widgetParamFloat( m_display, l_device,
+                                          F("POTb Max"), F("SRC_POT_MOD_B_MAX"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_pot_b_max->setMax( 200);  
+  param_pot_b_max->setMin(-200);
+  param_pot_b_max->setValueDefault(0);  
+  param_pot_b_max->setUpdateCallback( std::bind(&audioDeviceSampler::modPotsetMax,
+                                                    engine_device,
+                                                    1, std::placeholders::_1) );  
+
+
+  //----- PotC
+  widgetParamList *param_pot_c       = new widgetParamList( m_display, l_device,
+                                                            F("POTc ->"), F("SRC_POT_MOD_C"), 
+                                                            m_param_y_pos-5 );
+
+  param_pot_c->setValueDefault(0);
+
+  param_pot_c->setUpdateCallback( std::bind(&audioDeviceSampler::modPotregParam,
+                                                 engine_device,
+                                                 2, std::placeholders::_1) );  
+
+  //----- PotC Min
+  widgetParamFloat *param_pot_c_min = new widgetParamFloat( m_display, l_device,
+                                          F("POTc Min"), F("SRC_POT_MOD_C_MIN"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_pot_c_min->setMax( 200);  
+  param_pot_c_min->setMin(-200);
+  param_pot_c_min->setValueDefault(0);  
+  param_pot_c_min->setUpdateCallback( std::bind(&audioDeviceSampler::modPotsetMin,
+                                                    engine_device,
+                                                    2, std::placeholders::_1) );  
+
+
+  //----- PotC Max
+  widgetParamFloat *param_pot_c_max = new widgetParamFloat( m_display, l_device,
+                                          F("POTc Max"), F("SRC_POT_MOD_C_MAX"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_pot_c_max->setMax( 200);  
+  param_pot_c_max->setMin(-200);
+  param_pot_c_max->setValueDefault(0);  
+  param_pot_c_max->setUpdateCallback( std::bind(&audioDeviceSampler::modPotsetMax,
+                                                    engine_device,
+                                                    2, std::placeholders::_1) );  
+
+
+
+
+  //-------------------{ Sampler Modulation Midi }-----------------------
+  //----- Midi CCa Reg
+  widgetParamList *param_midi_cc_a  = new widgetParamList( m_display, l_device,
+                                                            F("CCa ->"), F("SRC_MIDI_MOD_CCA"), 
+                                                            m_param_y_pos-5 );
+
+  param_midi_cc_a->setValueDefault(0);
+
+  param_midi_cc_a->setUpdateCallback( std::bind(&audioDeviceSampler::modCCregParam,
+                                                 engine_device,
+                                                 0, std::placeholders::_1) );  
+
+
+  //Midi CCa CH
+  widgetParamList *param_midi_cc_a_ch = new widgetParamList( m_display, l_device,
+                                                            F("CCa <-"), F("SRC_MIDI_MOD_CCA_CH"), 
+                                                            m_param_y_pos-5, midi_cc_list_with_number, 120 );
+
+
+
+  param_midi_cc_a_ch->setValueDefault(1);
+  param_midi_cc_a_ch->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetCH,
+                                                    engine_device,
+                                                    0, std::placeholders::_1) );  
+
+
+  //Midi CCa Min
+  widgetParamFloat *param_midi_cc_a_min = new widgetParamFloat( m_display, l_device,
+                                          F("CCa Min"), F("SRC_MIDI_MOD_CCA_MIN"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_midi_cc_a_min->setMax( 200);  
+  param_midi_cc_a_min->setMin(-200);
+  param_midi_cc_a_min->setValueDefault(0);  
+  param_midi_cc_a_min->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetMin,
+                                                    engine_device,
+                                                    0, std::placeholders::_1) );  
+
+
+  //Midi CCa Max
+  widgetParamFloat *param_midi_cc_a_max = new widgetParamFloat( m_display, l_device,
+                                          F("CCa Max"), F("SRC_MIDI_MOD_CCA_MAX"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_midi_cc_a_max->setMax( 200);  
+  param_midi_cc_a_max->setMin(-200);
+  param_midi_cc_a_max->setValueDefault(0);  
+  param_midi_cc_a_max->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetMax,
+                                                    engine_device,
+                                                    0, std::placeholders::_1) );  
+
+  //------------
+  //Midi CCb Reg
+  widgetParamList *param_midi_cc_b  = new widgetParamList( m_display, l_device,
+                                                            F("CCb ->"), F("SRC_MIDI_MOD_CCB"), 
+                                                            m_param_y_pos-5);
+
+  param_midi_cc_b->setValueDefault(0);
+
+  param_midi_cc_b->setUpdateCallback( std::bind(&audioDeviceSampler::modCCregParam,
+                                                 engine_device,
+                                                 1, std::placeholders::_1) );  
+
+
+  //Midi CCb CH
+  widgetParamList *param_midi_cc_b_ch = new widgetParamList( m_display, l_device,
+                                                            F("CCb <-"), F("SRC_MIDI_MOD_CCB_CH"), 
+                                                            m_param_y_pos-5, midi_cc_list_with_number, 120 );
+
+
+
+  param_midi_cc_b_ch->setValueDefault(1);
+  param_midi_cc_b_ch->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetCH,
+                                                    engine_device,
+                                                    1, std::placeholders::_1) );  
+
+
+  //Midi CCa Min
+  widgetParamFloat *param_midi_cc_b_min = new widgetParamFloat( m_display, l_device,
+                                          F("CCb Min"), F("SRC_MIDI_MOD_CCB_MIN"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_midi_cc_b_min->setMax( 200);  
+  param_midi_cc_b_min->setMin(-200);
+  param_midi_cc_b_min->setValueDefault(0);  
+  param_midi_cc_b_min->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetMin,
+                                                    engine_device,
+                                                    1, std::placeholders::_1) );  
+
+
+  //Midi CCa Max
+  widgetParamFloat *param_midi_cc_b_max = new widgetParamFloat( m_display, l_device,
+                                          F("CCb Max"), F("SRC_MIDI_MOD_CCB_MAX"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_midi_cc_b_max->setMax( 200);  
+  param_midi_cc_b_max->setMin(-200);
+  param_midi_cc_b_max->setValueDefault(0);  
+  param_midi_cc_b_max->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetMax,
+                                                    engine_device,
+                                                    1, std::placeholders::_1) );  
+
+
+  //------------
+  //Midi CCc Reg
+  widgetParamList *param_midi_cc_c  = new widgetParamList( m_display, l_device,
+                                                            F("CCc ->"), F("SRC_MIDI_MOD_CCC"), 
+                                                            m_param_y_pos-5 );
+
+  param_midi_cc_c->setValueDefault(0);
+
+  param_midi_cc_c->setUpdateCallback( std::bind(&audioDeviceSampler::modCCregParam,
+                                                 engine_device,
+                                                 2, std::placeholders::_1) );  
+
+
+  //Midi CCc CH
+  widgetParamList *param_midi_cc_c_ch = new widgetParamList( m_display, l_device,
+                                                            F("CCc <-"), F("SRC_MIDI_MOD_CCC_CH"), 
+                                                            m_param_y_pos-5, midi_cc_list_with_number, 120 );
+
+
+
+  param_midi_cc_c_ch->setValueDefault(1);
+  param_midi_cc_c_ch->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetCH,
+                                                    engine_device,
+                                                    2, std::placeholders::_1) );  
+
+
+  //Midi CCa Min
+  widgetParamFloat *param_midi_cc_c_min = new widgetParamFloat( m_display, l_device,
+                                          F("CCc Min"), F("SRC_MIDI_MOD_CCC_MIN"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_midi_cc_c_min->setMax( 200);  
+  param_midi_cc_c_min->setMin(-200);
+  param_midi_cc_c_min->setValueDefault(0);  
+  param_midi_cc_c_min->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetMin,
+                                                    engine_device,
+                                                    2, std::placeholders::_1) );  
+
+
+  //Midi CCa Max
+  widgetParamFloat *param_midi_cc_c_max = new widgetParamFloat( m_display, l_device,
+                                          F("CCc Max"), F("SRC_MIDI_MOD_CCC_MAX"), 
+                                          m_param_y_pos, widgetParamFloat::PERCENT );
+  param_midi_cc_c_max->setMax( 200);  
+  param_midi_cc_c_max->setMin(-200);
+  param_midi_cc_c_max->setValueDefault(0);  
+  param_midi_cc_c_max->setUpdateCallback( std::bind(&audioDeviceSampler::modCCsetMax,
+                                                    engine_device,
+                                                    2, std::placeholders::_1) );  
+
+
+  //Set ModWidget Labels
+  for(int i= audioDeviceSampler::MOD_DEST_NONE; i<audioDeviceSampler::MOD_DEST_NUM; i++){
+    param_pot_a->pushString( engine_device->getParamString((audioDeviceSampler::mod_dest_t)(i)) );
+    param_pot_b->pushString( engine_device->getParamString((audioDeviceSampler::mod_dest_t)(i)) );
+    param_pot_c->pushString( engine_device->getParamString((audioDeviceSampler::mod_dest_t)(i)) );
+
+    param_midi_cc_a->pushString( engine_device->getParamString((audioDeviceSampler::mod_dest_t)(i)) );
+    param_midi_cc_b->pushString( engine_device->getParamString((audioDeviceSampler::mod_dest_t)(i)) );
+    param_midi_cc_c->pushString( engine_device->getParamString((audioDeviceSampler::mod_dest_t)(i)) );   
+  }
+
+  
+
   //-------------------{ Modulation GUI }-----------------------
-  m_param_list->pushWidget( new widgetLabel( m_display, F("--{Modulation}--")) ); 
+  m_param_list->pushWidget( new widgetLabel( m_display, F("---{Mod Poti}---")) ); 
+  //POTa
+  m_params.push_back( param_pot_a );  
+  m_param_list->pushWidget( param_pot_a );       
 
-  m_params.push_back( param_midi_cc_a);  
-  m_param_list->pushWidget( param_midi_cc_a);     
+  //POTb
+  m_params.push_back( param_pot_b );  
+  m_param_list->pushWidget( param_pot_b );      
 
-  m_params.push_back( param_pot_a_cc);  
-  m_param_list->pushWidget( param_pot_a_cc);   
+  //POTc
+  m_params.push_back( param_pot_c );  
+  m_param_list->pushWidget( param_pot_c );      
+
+
+  //MinMax
+  m_params.push_back( param_pot_a_min );  
+  m_param_list->pushWidget( param_pot_a_min );    
+
+  m_params.push_back( param_pot_a_max );  
+  m_param_list->pushWidget( param_pot_a_max );    
+
+  m_params.push_back( param_pot_b_min );  
+  m_param_list->pushWidget( param_pot_b_min );    
+
+  m_params.push_back( param_pot_b_max );  
+  m_param_list->pushWidget( param_pot_b_max );    
+
+  m_params.push_back( param_pot_c_min );  
+  m_param_list->pushWidget( param_pot_c_min );    
+
+  m_params.push_back( param_pot_c_max );  
+  m_param_list->pushWidget( param_pot_c_max );    
+
+
+
+  //Mod Midi
+  m_param_list->pushWidget( new widgetLabel( m_display, F("---{Mod Midi}---")) ); 
+
+  //Param Reg
+  m_params.push_back( param_midi_cc_a );  
+  m_param_list->pushWidget( param_midi_cc_a );       
+
+  m_params.push_back( param_midi_cc_b );  
+  m_param_list->pushWidget( param_midi_cc_b );       
+
+  m_params.push_back( param_midi_cc_c );  
+  m_param_list->pushWidget( param_midi_cc_c );    
+
+
+  //Source
+  m_params.push_back( param_midi_cc_a_ch );  
+  m_param_list->pushWidget( param_midi_cc_a_ch );     
+
+  m_params.push_back( param_midi_cc_b_ch );  
+  m_param_list->pushWidget( param_midi_cc_b_ch );     
+  
+  m_params.push_back( param_midi_cc_c_ch );  
+  m_param_list->pushWidget( param_midi_cc_c_ch );         
+
+
+  //Min/Max
+  m_params.push_back( param_midi_cc_a_min);  
+  m_param_list->pushWidget( param_midi_cc_a_min );   
+  m_params.push_back(param_midi_cc_a_max);
+  m_param_list->pushWidget( param_midi_cc_a_max );   
+
+  m_params.push_back( param_midi_cc_b_min);  
+  m_param_list->pushWidget( param_midi_cc_b_min );  
+  m_params.push_back( param_midi_cc_b_max);  
+  m_param_list->pushWidget( param_midi_cc_b_max );   
+
+  m_params.push_back( param_midi_cc_c_min );  
+  m_param_list->pushWidget( param_midi_cc_c_min );  
+  m_params.push_back( param_midi_cc_c_max );  
+  m_param_list->pushWidget( param_midi_cc_c_max );   
+
+
 
 
 

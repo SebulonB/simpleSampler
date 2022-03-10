@@ -185,18 +185,29 @@ void loop() {
 
   gui_state_machine();   
   
+  //check pot
+  checkPotVal();
+  for(int i=0; i<3; i++){
+    if(getPotUpdated(i)){
+      engine.setPot(i, getPotVal(i));
+    }
+  }
+
   //
   //50 millisecond 
   if(millis() >= ui_timer)
   {
     ui_timer = millis() + 10;
- 
   }     
 
   //
   //500ms 
   if(millis() >= ui_timer500){
     ui_timer500 = millis() + 500;
+    //update all 500ms
+    for(int i=0; i<3; i++){
+      engine.setPot(i, getPotVal(i));
+    }    
   }
 
 

@@ -32,6 +32,13 @@ void audioEngine::midiCC(byte channel, byte control, byte value)
   }
 }
 
+void audioEngine::setPot(byte channel, float val)
+{
+  for(int i=0; i<DEVICE_NUM; i++){
+    m_devices[i]->setPot(channel, val);
+  }  
+}
+
 
 audioEngine::audioEngine()
 {

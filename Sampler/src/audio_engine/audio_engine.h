@@ -49,6 +49,8 @@ class audioEngine
 
     void midiCC(byte channel, byte control, byte value);
 
+    void setPot(byte channel, float val);
+
 
   private:
     audioDevice * m_devices[DEVICE_NUM];
