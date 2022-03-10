@@ -13,7 +13,7 @@
 deviceParam::deviceParam()
 {
   for(int i=0; i<max_mod; i++){
-    m_mod[i] = 1.0;
+    m_mod[i] = 0.0;
   }
 }
 
@@ -44,7 +44,7 @@ void    deviceParam::removeModIndex(uint8_t i)
   m_free &= ~(1<<i);
   
   //reset to 1.0
-  m_mod[i] = 1.0;
+  m_mod[i] = 0.0;
 
 #ifdef DEBUG_DEVICE_PARAM
   sprintf(str_, "device removeIndex (%d) free(%2x)\n", i, m_free);
@@ -56,7 +56,7 @@ float   deviceParam::getVal(void)
 {
   float v = m_param;
   for(int i=0; i<max_mod; i++){
-    v *= m_mod[i];
+    v += m_mod[i];
   }
 
 #ifdef DEBUG_DEVICE_PARAM

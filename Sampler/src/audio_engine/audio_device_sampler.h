@@ -26,7 +26,7 @@ AudioConnection          patchCord3(envelope, 0, outMixerCH2, 0);
 */
 
 
-#define DEBUG_AUDIO_DEVICE_SAMPLER
+//#define DEBUG_AUDIO_DEVICE_SAMPLER
 
 
 class audioDeviceSampler : public audioDevice
@@ -42,8 +42,13 @@ class audioDeviceSampler : public audioDevice
     typedef enum {
       MOD_DEST_NONE = 0,
       MOD_DEST_VOLUME,
+      MOD_DEST_START,      
       MOD_DEST_PITCH,
-      MOD_DEST_START,
+      MOD_DEST_ATTACK,
+      MOD_DEST_HOLD,
+      MOD_DEST_DECAY,
+      MOD_DEST_SUSTAIN,
+      MOD_DEST_RELEASE,
       MOD_DEST_NUM,
     } mod_dest_t;
 
@@ -135,7 +140,18 @@ class audioDeviceSampler : public audioDevice
     float       m_pot_mod_max[MOD_POT_NUM];
     float       m_pot_mod_min[MOD_POT_NUM];       
 
+    //inter
     void set_volume();
+    void set_pitch();
+    void set_start();
+
+    void set_attack();
+    void set_hold();
+    void set_decay();
+    void set_sustain();
+    void set_release();
+
+    void update_dest(mod_dest_t dest);
 
     //patch
     AudioPlayMemoryC         *playMem;  

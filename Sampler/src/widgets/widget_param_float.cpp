@@ -77,17 +77,19 @@ void widgetParamFloat::setValue(float m)
   if(m >= m_max){m=m_max;}
   if(m <= m_min){m=m_min;}
 
-  //clear last digit
-  if (m >=  999.9){
-    m           = (uint32_t)std::round(m);
-    uint32_t ml = (uint32_t)m%10;
-    m  -= ml;
+  if(m_unit == SECONDS){
+    //clear last digit
+    if (m >=  999.9){
+      m           = (uint32_t)std::round(m);
+      uint32_t ml = (uint32_t)m%10;
+      m  -= ml;
+    }
+    //round
+    else if( m >= 99.9){
+      m = (uint32_t)std::round(m);     
+    }
   }
-  //round
-  else if( m >= 99.9){
-    m = (uint32_t)std::round(m);     
-  }
-
+  
   m_value = m;
 
   callback();

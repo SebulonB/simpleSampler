@@ -53,8 +53,15 @@ audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audi
   //set label names
   m_param_labels[MOD_DEST_NONE]   = str_device_param_none;
   m_param_labels[MOD_DEST_VOLUME] = str_device_param_volume;  
-  m_param_labels[MOD_DEST_PITCH]  = str_device_param_start;    
-  m_param_labels[MOD_DEST_START]  = str_device_param_pitch;  
+  m_param_labels[MOD_DEST_PITCH]  = str_device_param_pitch;     
+  m_param_labels[MOD_DEST_START]  = str_device_param_start; 
+
+  m_param_labels[MOD_DEST_ATTACK]  = str_device_param_attack;  
+  m_param_labels[MOD_DEST_HOLD]    = str_device_param_hold;  
+  m_param_labels[MOD_DEST_DECAY]   = str_device_param_decay;
+  m_param_labels[MOD_DEST_SUSTAIN] = str_device_param_sustain;  
+  m_param_labels[MOD_DEST_RELEASE] = str_device_param_release;  
+
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Indit Audio Device Sampler (%s)\n", l_device);
@@ -141,11 +148,7 @@ void audioDeviceSampler::midiCC(byte channel, byte control, byte value)
   float val = mapf(value, 0, MIDI_VAL_MAX, m_cc_mod_min[i], m_cc_mod_max[i]); 
   m_params[m_cc_dest[i]].setMod(m_cc_mod_slot[i], val);
 
-  switch(m_cc_dest[i]){
-    case MOD_DEST_VOLUME:
-      set_volume();
-    break;
-  }
+  update_dest(m_cc_dest[i]);
   
 }
 
@@ -185,6 +188,55 @@ void audioDeviceSampler::setMidiCh(uint8_t m)
   
   m_midi_ch=m;
 }
+
+
+//
+//   ---------{ Modulation Global }--------------
+//
+void audioDeviceSampler::update_dest(mod_dest_t dest)
+{
+  switch(dest){
+
+    case MOD_DEST_VOLUME:
+      set_volume();
+    break;
+
+    case  MOD_DEST_PITCH:
+     set_pitch();
+    break;
+
+    case MOD_DEST_START:
+      set_start();
+    break;
+
+    case  MOD_DEST_ATTACK:
+      set_attack();
+    break;
+
+    case  MOD_DEST_HOLD:
+      set_hold();
+    break;
+
+    case  MOD_DEST_DECAY:
+      set_decay();
+    break;
+
+    case  MOD_DEST_SUSTAIN:
+      set_sustain();
+    break;
+
+    case  MOD_DEST_RELEASE:
+      set_release();
+    break;    
+
+    case MOD_DEST_NONE:
+    case MOD_DEST_NUM:
+    default:
+    break;
+
+  }
+}
+
 
 //
 //   ---------{ Modulation Midi }--------------
@@ -273,7 +325,7 @@ void audioDeviceSampler::modCCsetMin(uint8_t index, float v)
 
 
 //
-//   ---------{ Modulation Midi }--------------
+//   ---------{ Modulation Poti }--------------
 //
 void audioDeviceSampler::setPot(byte channel, float v)
 {
@@ -295,12 +347,8 @@ void audioDeviceSampler::setPot(byte channel, float v)
     l_device, channel, v, val, m_pot_mod_min[i], m_pot_mod_max[i]);
   Serial.print(str_);
 #endif
-
-  switch(m_pot_dest[i]){
-    case MOD_DEST_VOLUME:
-      set_volume();
-    break;
-  }
+  
+  update_dest(m_pot_dest[i]);
   
 }
 
@@ -417,6 +465,8 @@ void audioDeviceSampler::setVolume(float v)
 void audioDeviceSampler::set_volume()
 {
   float m  = m_params[MOD_DEST_VOLUME].getVal();
+  if     ( m < 0.0) { m = 0.0;}
+  else if( m > 2.0) { m = 2.0;}
   float v1 = m_ch1_vol * m * m_velocity;
   float v2 = m_ch2_vol * m * m_velocity;
 
@@ -462,22 +512,34 @@ void audioDeviceSampler::setVolCH2(float v)
 //
 //   ---------{ Params Main }--------------
 //
+void audioDeviceSampler::set_start()
+{
+  AudioNoInterrupts();  
+  float v = m_params[MOD_DEST_START].getVal();
+  //clip
+  if     (v < 0.0) {v = 0.0;}
+  else if(v > 1.0) {v = 1.0;}
+
+  playMem->setStart(v);
+  AudioInterrupts(); 
+}
+
 void audioDeviceSampler::setStart(float v)
 {
-
-  AudioNoInterrupts();  
-  //gui use 100%
-  playMem->setStart(v/100.);
-  AudioInterrupts(); 
+  v /= 100.;
+  m_params[MOD_DEST_START].setParam(v);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setStart(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif
+
+  set_start();
 }
 
 void audioDeviceSampler::setLength(float v)
 {
+ v /= 100.;
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setLength(%8.2f)\n", l_device, v);
@@ -486,83 +548,149 @@ void audioDeviceSampler::setLength(float v)
 }
 
 
-void audioDeviceSampler::setPitch(float v)
+void audioDeviceSampler::set_pitch()
 {
   AudioNoInterrupts();  
-  //gui use 100%
-  playMem->setPitch(v/100.);
+  float v =  m_params[MOD_DEST_PITCH].getVal();
+  //clip
+  if     (v < -0.8) {v = -0.8;}
+  else if(v >  0.8) {v =  0.8;}  
+  playMem->setPitch( v );
   AudioInterrupts(); 
+}
+
+
+void audioDeviceSampler::setPitch(float v)
+{
+  v /= 100.;  
+  m_params[MOD_DEST_PITCH].setParam(v);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setPitch(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif  
+
+  set_pitch();
 }
 
 
 //
 //   ---------{ Envelop }--------------
 //
-void audioDeviceSampler::setAttack(float v)
+void audioDeviceSampler::set_attack()
 {
   AudioNoInterrupts();  
+  float v = m_params[MOD_DEST_ATTACK].getVal() * 9999.;
+  if     (v < 0. )    {v = 0;}
+  else if(v > 10000. ){v = 10000.;}
+
   envelope->attack(v);
   AudioInterrupts(); 
+}
+
+void audioDeviceSampler::set_hold()
+{
+  AudioNoInterrupts();  
+  float v = m_params[MOD_DEST_HOLD].getVal() * 9999.;
+  if     (v < 0. )    {v = 0;}
+  else if(v > 10000. ){v = 10000.;}  
+
+  envelope->hold(v);
+  AudioInterrupts(); 
+}
+
+void audioDeviceSampler::set_decay()
+{
+  AudioNoInterrupts();  
+  float v = m_params[MOD_DEST_DECAY].getVal() * 9999.;
+  if     (v < 0. )    {v = 0;}
+  else if(v > 10000. ){v = 10000.;}  
+
+  envelope->decay(v);
+  AudioInterrupts(); 
+}
+
+void audioDeviceSampler::set_sustain()
+{
+  AudioNoInterrupts();  
+  float v = m_params[MOD_DEST_SUSTAIN].getVal();
+  if     (v < 0. )    {v = 0;}
+  else if(v > 1. ){v = 1.0;}  
+
+  envelope->sustain(v);
+  AudioInterrupts(); 
+}
+
+void audioDeviceSampler::set_release()
+{
+  AudioNoInterrupts();  
+  float v = m_params[MOD_DEST_RELEASE].getVal() * 9999;
+  if     (v < 0. )    {v = 0;}
+  else if(v > 10000. ){v = 10000.;}  
+
+  envelope->release(v);
+  AudioInterrupts(); 
+}
+
+void audioDeviceSampler::setAttack(float v)
+{
+  m_params[MOD_DEST_ATTACK].setParam(v/9999.);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setAttack(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif
+
+  set_attack();
 }
 
 void audioDeviceSampler::setHold(float v)
 {
-  AudioNoInterrupts();  
-  envelope->hold(v);
-  AudioInterrupts(); 
+  m_params[MOD_DEST_HOLD].setParam(v/9999.);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setHold(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif
 
+  set_hold();
 }
 
 void audioDeviceSampler::setDecay(float v)
 {
-  AudioNoInterrupts();  
-  envelope->decay(v);
-  AudioInterrupts(); 
+  m_params[MOD_DEST_DECAY].setParam(v/9999.);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setDecay(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif  
+
+  set_decay();
 }
 
 void audioDeviceSampler::setSustain(float v)
 {
   m_sustain = v/100.;
-  AudioNoInterrupts();  
-  envelope->sustain(m_sustain);
-  AudioInterrupts(); 
-
+  m_params[MOD_DEST_SUSTAIN].setParam(m_sustain);
+  
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setSustain(%8.2f)\n", l_device, m_sustain);
   Serial.print(str_);
 #endif  
+
+ set_sustain();
 }
 
 void audioDeviceSampler::setRelease(float v)
 {
-  AudioNoInterrupts();  
-  envelope->release(v);
-  AudioInterrupts(); 
+  m_params[MOD_DEST_RELEASE].setParam(v/9999.);
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) setRelease(%8.2f)\n", l_device, v);
   Serial.print(str_);
 #endif  
+
+  set_release();
 }
 
 
