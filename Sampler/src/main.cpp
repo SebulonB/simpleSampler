@@ -167,6 +167,7 @@ void setup() {
   
   delay(1000);
   gui_init(&engine);  
+  engine.setGui(gui_get_widget_index());
 
   led_init();
   clock_init();

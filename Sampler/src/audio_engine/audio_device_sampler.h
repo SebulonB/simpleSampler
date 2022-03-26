@@ -33,7 +33,7 @@ class audioDeviceSampler : public audioDevice
 {
 
   public:
-    audioDeviceSampler(const __FlashStringHelper *device);
+    audioDeviceSampler(const __FlashStringHelper *device, uint32_t id);
     AudioStream *getOutputStream(uint8_t audio_ch){
       if(audio_ch == 0){return outMixerCH1;}
       else             {return outMixerCH2;}

@@ -16,8 +16,9 @@ extern uint8_t external_psram_size; //in MB. Set in startup.c
 
 
 
-audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device) : audioDevice()
+audioDeviceSampler::audioDeviceSampler(const __FlashStringHelper *device, uint32_t id) : audioDevice()
 {
+  m_id = id;
 
   l_device = reinterpret_cast<const char *>(device); 
   m_device_type = AUDIO_DEVICE_SAMPLER;
@@ -98,6 +99,10 @@ void audioDeviceSampler::midiNoteOn(byte channel, byte note, byte velocity)
     l_device, channel, note, velocity, m_note_min, m_note_max, p);
   Serial.print(str_);
 #endif
+
+  if(m_gui != nullptr){
+    m_gui->noteOn(m_id, note, velocity);
+  }
 }
 
 void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
@@ -108,18 +113,23 @@ void audioDeviceSampler::midiNoteOff(byte channel, byte note, byte velocity)
 
   if(m_mem == NULL){return;}
   
-  if(m_sustain <= 0.0) {return;}
-
-  AudioNoInterrupts();  
-  envelope->noteOff();  
-  //playMem->stop(); 
-  AudioInterrupts(); 
+  if(m_sustain > 0.0) {
+    AudioNoInterrupts();  
+    envelope->noteOff();  
+    //playMem->stop(); 
+    AudioInterrupts(); 
+  }
 
 #ifdef DEBUG_AUDIO_DEVICE_SAMPLER
   sprintf(str_, "Sampler(%s) noteOff ch(%d) note(%d) vel(%d)\n", 
     l_device, channel, note, velocity);
   Serial.print(str_);
 #endif
+
+  if(m_gui != nullptr){
+    m_gui->noteOff(m_id, note, velocity);
+  }
+
 }    
 
 void audioDeviceSampler::midiCC(byte channel, byte control, byte value)

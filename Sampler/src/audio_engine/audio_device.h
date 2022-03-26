@@ -1,6 +1,8 @@
 #ifndef AUDIO_DEVICE_H_
 #define AUDIO_DEVICE_H_
 
+#include "widgets/widgets.h"
+
 
 class audioDevice
 {
@@ -30,9 +32,19 @@ class audioDevice
       return (t == m_device_type ? true : false);
     }
 
+    void setGui(widgetIndicator * gui){
+      m_gui = gui;
+    }
+
+
+
   protected:
     enum AUDIO_DEVICE_TYPE m_device_type{AUDIO_DEVICE_UNKNOWN};
     const char * l_device;
+
+    widgetIndicator * m_gui{nullptr};  
+    uint32_t          m_id{0};
+
 
 };
 

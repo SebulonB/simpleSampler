@@ -84,6 +84,11 @@ const char w_index_list[] PROGMEM = {'1', '2', '3', '4', '5', '6', 'M', 'L', 'C'
 
 widgetIndicator w_index(&display, w_index_list, GUI_STATE_NUM);
 
+widgetIndicator * gui_get_widget_index(void)
+{
+  return &w_index;
+}
+
 
 //--------------- GUI Devices -----------------------
 #define GUI_DEVICE_X_POS   31

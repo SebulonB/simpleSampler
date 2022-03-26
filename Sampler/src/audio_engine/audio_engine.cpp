@@ -5,6 +5,8 @@
 #include <SerialFlash.h>
 #include <MIDI.h>
 
+#include "widgets/widgets.h"
+
 #include "audio_engine.h"
 #include "audio_device.h"
 #include "audioDeviceHelpers.h"
@@ -39,6 +41,13 @@ void audioEngine::setPot(byte channel, float val)
   }  
 }
 
+void audioEngine::setGui(widgetIndicator * gui)
+{
+  for(int i=0; i<DEVICE_NUM; i++){
+    m_devices[i]->setGui(gui);
+  }  
+}
+
 
 audioEngine::audioEngine()
 {
@@ -58,12 +67,12 @@ audioEngine::audioEngine()
 
 
   //Create Samplers
-  m_devices[DEVICE_SAMPLER_1] = new audioDeviceSampler(F("Sampler_1"));
-  m_devices[DEVICE_SAMPLER_2] = new audioDeviceSampler(F("Sampler_2"));
-  m_devices[DEVICE_SAMPLER_3] = new audioDeviceSampler(F("Sampler_3"));
-  m_devices[DEVICE_SAMPLER_4] = new audioDeviceSampler(F("Sampler_4"));
-  m_devices[DEVICE_SAMPLER_5] = new audioDeviceSampler(F("Sampler_5"));
-  m_devices[DEVICE_SAMPLER_6] = new audioDeviceSampler(F("Sampler_6"));
+  m_devices[DEVICE_SAMPLER_1] = new audioDeviceSampler(F("Sampler_1"), 0);
+  m_devices[DEVICE_SAMPLER_2] = new audioDeviceSampler(F("Sampler_2"), 1);
+  m_devices[DEVICE_SAMPLER_3] = new audioDeviceSampler(F("Sampler_3"), 2);
+  m_devices[DEVICE_SAMPLER_4] = new audioDeviceSampler(F("Sampler_4"), 3);
+  m_devices[DEVICE_SAMPLER_5] = new audioDeviceSampler(F("Sampler_5"), 4);
+  m_devices[DEVICE_SAMPLER_6] = new audioDeviceSampler(F("Sampler_6"), 5);
 
   for(int i=0; i<6; i++){
     m_out_connections.push_back(new AudioConnection(

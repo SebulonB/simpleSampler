@@ -8,6 +8,8 @@
 #include "audio_device.h"
 #include "audio_device_sampler.h"
 
+#include "widgets/widgets.h"
+
 
 
 /*
@@ -51,11 +53,13 @@ class audioEngine
 
     void setPot(byte channel, float val);
 
+    void setGui(widgetIndicator * gui);
 
   private:
     audioDevice * m_devices[DEVICE_NUM];
     audioDevice * get_device(enum AUDIO_ENGINE_DEVICES d);
-  
+
+    widgetIndicator * m_gui{nullptr};  
 
     //audio Engine --Main--
     audioMixerC              *outMixerCH2;    //xy=915.6480178833008,516.7592353820801

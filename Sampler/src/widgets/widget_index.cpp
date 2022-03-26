@@ -53,6 +53,54 @@ bool widgetIndicator::incIndex(bool inc)
 }
 
 
+void widgetIndicator::noteOn(uint32_t id, uint8_t /*note*/, uint8_t /*vel*/)
+{
+  if(id >= WIDGET_INDICATOR_MAX_ENTRIES){return;}
+
+  m_note_gate[id] = true;
+  draw_note(id);
+}
+
+void widgetIndicator::noteOff(uint32_t id, uint8_t /*note*/, uint8_t /*vel*/)
+{
+  if(id >= WIDGET_INDICATOR_MAX_ENTRIES){return;}
+
+  m_note_gate[id] = false;
+  draw_note(id);
+}
+
+void widgetIndicator::draw_note(uint8_t ch)
+{
+  if(m_display == NULL){return;}
+  if(ch >= WIDGET_INDICATOR_MAX_ENTRIES){return;}
+
+  if(m_index != ch){return;}
+
+  if      (!m_active && m_note_gate[ch]){
+    m_display->fillRect(m_pos_x, m_pos_y, 6, 6, SSD1306_WHITE);
+  }
+  else if (!m_active && !m_note_gate[ch]){
+    m_display->fillRect(m_pos_x, m_pos_y, 6, 6, SSD1306_BLACK);
+    m_display->drawRect(m_pos_x, m_pos_y, m_width, m_height, SSD1306_WHITE);    
+  }  
+  else if (m_active && m_note_gate[ch]){
+    m_display->fillRect(m_pos_x, m_pos_y, 6, 6, SSD1306_BLACK);
+    m_display->drawRect(m_pos_x, m_pos_y, m_width, m_height, SSD1306_WHITE);      
+  }  
+  else if (m_active && !m_note_gate[ch]){
+    m_display->fillRect(m_pos_x, m_pos_y, 6, 6, SSD1306_WHITE);
+  }    
+
+  m_display->display();       
+  
+#ifdef DEBUG_WIDGET_INDICATOR     
+  sprintf(str_, "widgetIdikator draw note gate: active(%s) index(%d | %d) gate(%s)\n", 
+          (m_active?"true":"false"), m_index, ch, (m_note_gate[ch]?"on":"off") );
+  Serial.print(str_);      
+#endif       
+}
+
+
 void widgetIndicator::draw(void){
   if(m_display == NULL){return;}
   
